@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>סקירת קליפים</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0a0d14;
+    --surface:    #12161f;
+    --surface2:   #1a1f2e;
+    --border:     rgba(255,255,255,0.08);
+    --border2:    rgba(255,255,255,0.14);
+    --text:       #f0f2f8;
+    --text-dim:   #8892aa;
+    --text-dimmer:#4a5268;
+    --accent:     #4f7cff;
+    --accent-soft:rgba(79,124,255,0.12);
+    --accent-glow:rgba(79,124,255,0.25);
+    --green:      #22c55e;
+    --green-soft: rgba(34,197,94,0.12);
+    --red:        #ef4444;
+    --red-soft:   rgba(239,68,68,0.12);
+    --gold:       #f59e0b;
+    --gold-soft:  rgba(245,158,11,0.12);
+    --purple:     #a855f7;
+    --purple-soft:rgba(168,85,247,0.12);
+    --radius:     16px;
+    --radius-sm:  10px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html, body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100dvh;
+    width: 100vw;
+    overscroll-behavior: none;
+  }
+
+  /* ══════════════════════════════════
+     MAIN LAYOUT
+  ══════════════════════════════════ */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  /* ══════════════════════════════════
+     TOP BAR
+  ══════════════════════════════════ */
+  .topbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+
+  .clip-counter {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-glow);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* ══════════════════════════════════
+     CLIP VIEWER (middle)
+  ══════════════════════════════════ */
+  .clip-viewer {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+  }
+
+  /* nav arrows */
+  .nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .nav-arrow:active { background: rgba(255,255,255,0.2); }
+  .nav-arrow:disabled, .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+  .nav-arrow.right { right: 10px; }
+  .nav-arrow.left  { left: 10px; }
+
+  /* video container */
+  .video-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  video.clip-video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    background: #000;
+  }
+
+  /* loading overlay */
+  .video-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--bg);
+    z-index: 5;
+  }
+  .video-loading.hidden { display: none; }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(79,124,255,0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* error overlay */
+  .video-error {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--bg);
+    z-index: 5;
+    padding: 20px;
+    text-align: center;
+  }
+  .video-error.visible { display: flex; }
+  .video-error-icon { font-size: 36px; }
+  .video-error-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .video-error-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* clip name overlay */
+  .clip-name-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 40px 14px 10px;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .clip-name-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  /* action badge on clip */
+  .clip-action-badge {
+    display: none;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .clip-action-badge.visible { display: block; }
+  .clip-action-badge.upload  { background: var(--green); color: #fff; }
+  .clip-action-badge.premium { background: var(--gold); color: #000; }
+  .clip-action-badge.schedule { background: var(--accent); color: #fff; }
+  .clip-action-badge.delete  { background: var(--red); color: #fff; }
+
+  /* dots progress */
+  .dots-row {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 15;
+    max-width: calc(100% - 24px);
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .dot-seg {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.25);
+    transition: background 0.2s;
+    flex: 1;
+    min-width: 6px;
+    max-width: 40px;
+  }
+  .dot-seg.done    { background: rgba(255,255,255,0.85); }
+  .dot-seg.current { background: var(--accent); }
+
+  /* ══════════════════════════════════
+     BOTTOM ACTIONS
+  ══════════════════════════════════ */
+  .bottom-area {
+    flex-shrink: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  /* 4 action buttons */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .action-btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 8px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1.5px solid transparent;
+    position: relative;
+  }
+  .action-btn:active { transform: scale(0.97); opacity: 0.85; }
+
+  .action-btn.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+
+  .btn-upload {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: rgba(34,197,94,0.25);
+  }
+  .btn-upload.selected { background: var(--green); color: #fff; border-color: var(--green); box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
+  .btn-upload.selected::after { color: var(--green); }
+
+  .btn-premium {
+    background: var(--gold-soft);
+    color: var(--gold);
+    border-color: rgba(245,158,11,0.25);
+  }
+  .btn-premium.selected { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 4px 14px rgba(245,158,11,0.35); }
+  .btn-premium.selected::after { color: var(--gold); }
+
+  .btn-schedule {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: rgba(79,124,255,0.25);
+  }
+  .btn-schedule.selected { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 14px rgba(79,124,255,0.35); }
+  .btn-schedule.selected::after { color: var(--accent); }
+
+  .btn-delete {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: rgba(239,68,68,0.25);
+  }
+  .btn-delete.selected { background: var(--red); color: #fff; border-color: var(--red); box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
+  .btn-delete.selected::after { color: var(--red); }
+
+  /* save & send button */
+  .save-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #4f7cff, #7c5cfc);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 13px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 4px 18px rgba(79,124,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .save-btn:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+  .save-btn:not(:disabled):active { transform: scale(0.98); opacity: 0.88; }
+
+  .save-progress {
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(79,124,255,0.2);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+
+  /* ══════════════════════════════════
+     SCHEDULE PICKER MODAL
+  ══════════════════════════════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.visible { display: flex; }
+
+  .modal-sheet {
+    background: var(--surface2);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    width: 100%;
+    max-width: 480px;
+    padding: 0 0 calc(20px + env(safe-area-inset-bottom));
+    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  .modal-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-body { padding: 16px 16px; }
+
+  /* Calendar inside modal */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .cal-nav-btn:active { background: var(--border2); }
+  .cal-month-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 14px;
+  }
+  .cal-day-header {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dimmer);
+    padding: 3px 0;
+  }
+  .cal-day {
+    text-align: center;
+    padding: 7px 2px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.12s;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past  { color: var(--text-dimmer); cursor: default; }
+  .cal-day.today { color: var(--accent); font-weight: 800; }
+  .cal-day.selected { background: var(--accent); color: #fff; font-weight: 700; }
+  .cal-day:hover:not(.empty):not(.past) { background: var(--border2); }
+  .cal-day.selected:hover { background: var(--accent); }
+
+  /* time row */
+  .time-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .time-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .time-lbl { font-size: 10px; font-weight: 700; color: var(--text-dimmer); text-transform: uppercase; letter-spacing: 0.06em; }
+  .time-scroll {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    overflow: hidden;
+    width: 62px;
+  }
+  .time-btn {
+    background: none; border: none;
+    width: 100%; padding: 7px 0;
+    font-size: 12px; color: var(--accent);
+    cursor: pointer; font-weight: 700;
+    font-family: 'Heebo', sans-serif;
+    transition: background 0.12s;
+  }
+  .time-btn:active { background: var(--border); }
+  .time-val {
+    font-size: 24px; font-weight: 800;
+    color: var(--text); padding: 5px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    font-family: 'Heebo', sans-serif;
+  }
+  .time-sep { font-size: 26px; font-weight: 800; color: var(--text); margin-top: 28px; }
+
+  .modal-confirm-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .modal-confirm-btn:disabled { opacity: 0.3; cursor: default; }
+  .modal-confirm-btn:not(:disabled):active { opacity: 0.8; }
+
+  .modal-cancel {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px;
+    margin-top: 4px;
+  }
+
+  /* ══════════════════════════════════
+     SUCCESS STATE
+  ══════════════════════════════════ */
+  #success-state {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: var(--bg);
+    text-align: center;
+    padding: 24px;
+    z-index: 200;
+    animation: fadeIn 0.4s ease both;
+  }
+  #success-state.visible { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .success-icon { font-size: 60px; line-height: 1; }
+  .success-title { font-size: 22px; font-weight: 900; }
+  .success-sub { font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 280px; }
+
+  /* ══════════════════════════════════
+     EMPTY STATE
+  ══════════════════════════════════ */
+  #empty-state {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: var(--bg);
+    text-align: center;
+    padding: 32px;
+    z-index: 200;
+  }
+  #empty-state.visible { display: flex; }
+
+  /* ══════════════════════════════════
+     SWIPE ANIMATION
+  ══════════════════════════════════ */
+  .clip-slide-wrapper {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+  }
+  .clip-slide-wrapper.slide-out-left  { transform: translateX(-100%); opacity: 0; }
+  .clip-slide-wrapper.slide-out-right { transform: translateX(100%);  opacity: 0; }
+  .clip-slide-wrapper.slide-in-left   { animation: slideInLeft  0.3s cubic-bezier(0.4,0,0.2,1) both; }
+  .clip-slide-wrapper.slide-in-right  { animation: slideInRight 0.3s cubic-bezier(0.4,0,0.2,1) both; }
+
+  @keyframes slideInLeft  { from { transform: translateX(-80%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideInRight { from { transform: translateX(80%);  opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🎬 סקירת קליפים</div>
+      <div class="topbar-sub">בחר פעולה לכל קליפ ולחץ שמור</div>
+    </div>
+    <div class="clip-counter" id="clipCounter">1 / 1</div>
+  </div>
+
+  <!-- CLIP VIEWER -->
+  <div class="clip-viewer" id="clipViewer">
+
+    <!-- dots -->
+    <div class="dots-row" id="dotsRow"></div>
+
+    <!-- nav arrows -->
+    <button class="nav-arrow right" id="arrowRight" onclick="navigate(1)">›</button>
+    <button class="nav-arrow left"  id="arrowLeft"  onclick="navigate(-1)">‹</button>
+
+    <!-- slide wrapper -->
+    <div class="clip-slide-wrapper" id="slideWrapper">
+      <div class="video-wrap" id="videoWrap">
+
+        <!-- loading -->
+        <div class="video-loading" id="videoLoading">
+          <div class="spinner"></div>
+          <div class="loading-text">טוען קליפ...</div>
+        </div>
+
+        <!-- error -->
+        <div class="video-error" id="videoError">
+          <div class="video-error-icon">⚠️</div>
+          <div class="video-error-text">לא ניתן לטעון את הקליפ דרך האפליקציה<br>ניתן לצפות ב-Google Drive</div>
+          <div class="video-error-link" id="errorDriveLink" onclick="openDriveLink()">פתח ב-Google Drive ↗</div>
+        </div>
+
+        <!-- video element -->
+        <video
+          id="clipVideo"
+          class="clip-video"
+          playsinline
+          controls
+          preload="metadata"
+        ></video>
+
+        <!-- name overlay -->
+        <div class="clip-name-overlay">
+          <div class="clip-name-text" id="clipNameText"></div>
+          <div class="clip-action-badge" id="clipActionBadge"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ACTIONS -->
+  <div class="bottom-area">
+    <div class="action-grid">
+      <button class="action-btn btn-upload"   id="btn-upload"   onclick="selectAction('upload')">⬆️ העלה עכשיו</button>
+      <button class="action-btn btn-premium"  id="btn-premium"  onclick="selectAction('premium')">⭐ עריכת פרימיום</button>
+      <button class="action-btn btn-schedule" id="btn-schedule" onclick="selectAction('schedule')">📅 תזמן העלאה</button>
+      <button class="action-btn btn-delete"   id="btn-delete"   onclick="selectAction('delete')">🗑️ מחק קליפ</button>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveAll()" disabled>
+      💾 שמור ושלח שינויים
+      <span class="save-progress" id="saveProgress"></span>
+    </button>
+  </div>
+
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 בחר תאריך ושעה לפרסום</div>
+    <div class="modal-body">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrev()">›</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav-btn" onclick="calNext()">‹</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="time-row">
+        <div class="time-col">
+          <div class="time-lbl">דקות</div>
+          <div class="time-scroll">
+            <button class="time-btn" onclick="changeTime('min',1)">▲</button>
+            <div class="time-val" id="minVal">00</div>
+            <button class="time-btn" onclick="changeTime('min',-1)">▼</button>
+          </div>
+        </div>
+        <div class="time-sep">:</div>
+        <div class="time-col">
+          <div class="time-lbl">שעה</div>
+          <div class="time-scroll">
+            <button class="time-btn" onclick="changeTime('hr',1)">▲</button>
+            <div class="time-val" id="hrVal">09</div>
+            <button class="time-btn" onclick="changeTime('hr',-1)">▼</button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-confirm-btn" id="modalConfirmBtn" onclick="confirmSchedule()" disabled>אשר תזמון</button>
+      <button class="modal-cancel" onclick="cancelSchedule()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS STATE -->
+<div id="success-state">
+  <div class="success-icon">✅</div>
+  <div class="success-title">הבחירות נשלחו!</div>
+  <div class="success-sub">הסוכן קיבל את כל ההוראות שלך לכל הקליפים ויטפל בהם בהתאם 🚀<br><br>ניתן לסגור את החלונית ולחזור לצ׳אט</div>
+</div>
+
+<!-- EMPTY STATE -->
+<div id="empty-state">
+  <div style="font-size:48px">📂</div>
+  <div style="font-size:18px;font-weight:800">אין קליפים</div>
+  <div style="font-size:13px;color:var(--text-dim)">לא נמצאו קליפים לסקירה</div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// TELEGRAM INIT
+// ══════════════════════════════════════
+var tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); tg.enableClosingConfirmation(); }
+
+function haptic(type) {
+  if (!tg || !tg.HapticFeedback) return;
+  if (type === 'impact') tg.HapticFeedback.impactOccurred('medium');
+  if (type === 'select') tg.HapticFeedback.selectionChanged();
+  if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+}
+
+// ══════════════════════════════════════
+// URL PARAMS
+// ══════════════════════════════════════
+var params    = new URLSearchParams(window.location.search);
+var resumeUrl = params.get('resumeUrl') || '';
+var chatId    = params.get('chatId')    || '';
+
+var clips = [];
+try {
+  var rawClips = params.get('clips');
+  if (rawClips) {
+    var decoded = decodeURIComponent(escape(atob(rawClips)));
+    clips = JSON.parse(decoded);
+  }
+} catch(e) {}
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+var currentIndex = 0;
+var decisions    = {}; // { clipIndex: { action, scheduledAt } }
+var currentDriveUrl = '';
+
+// For schedule modal
+var calYear  = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+var selDate  = null;
+var selHour  = 9;
+var selMin   = 0;
+var scheduleTargetIndex = null; // which clip we're scheduling
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  if (!clips || clips.length === 0) {
+    document.getElementById('empty-state').classList.add('visible');
+    return;
+  }
+
+  buildDots();
+  loadClip(0);
+}
+
+// ══════════════════════════════════════
+// DOTS
+// ══════════════════════════════════════
+function buildDots() {
+  var row = document.getElementById('dotsRow');
+  var html = '';
+  for (var i = 0; i < clips.length; i++) {
+    html += '<div class="dot-seg" id="dot-' + i + '"></div>';
+  }
+  row.innerHTML = html;
+  updateDots();
+}
+
+function updateDots() {
+  for (var i = 0; i < clips.length; i++) {
+    var dot = document.getElementById('dot-' + i);
+    if (!dot) continue;
+    dot.className = 'dot-seg' + (i < currentIndex ? ' done' : (i === currentIndex ? ' current' : ''));
+  }
+}
+
+// ══════════════════════════════════════
+// LOAD CLIP
+// ══════════════════════════════════════
+function driveUrlToStream(url) {
+  // Extract file ID from various Google Drive URL formats
+  var fileId = null;
+
+  // Format: /file/d/FILE_ID/view or /file/d/FILE_ID
+  var m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m1) fileId = m1[1];
+
+  // Format: id=FILE_ID
+  if (!fileId) {
+    var m2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m2) fileId = m2[1];
+  }
+
+  if (!fileId) return url; // return as-is if can't parse
+
+  // Use export=view which works best for video streaming
+  return 'https://drive.google.com/uc?export=view&id=' + fileId;
+}
+
+function loadClip(index) {
+  var clip = clips[index];
+  if (!clip) return;
+
+  currentIndex = index;
+  currentDriveUrl = clip.driveUrl || '';
+
+  // Update counter
+  document.getElementById('clipCounter').textContent = (index + 1) + ' / ' + clips.length;
+
+  // Update arrows
+  var arrowRight = document.getElementById('arrowRight');
+  var arrowLeft  = document.getElementById('arrowLeft');
+  arrowRight.classList.toggle('hidden', index >= clips.length - 1);
+  arrowLeft.classList.toggle('hidden',  index <= 0);
+
+  // Update dots
+  updateDots();
+
+  // Update name
+  document.getElementById('clipNameText').textContent = clip.name || 'קליפ ' + (index + 1);
+
+  // Update action badge
+  updateBadge(index);
+
+  // Update buttons highlight
+  updateButtonHighlights(index);
+
+  // Load video
+  loadVideo(clip.driveUrl);
+}
+
+function loadVideo(driveUrl) {
+  var videoEl  = document.getElementById('clipVideo');
+  var loading  = document.getElementById('videoLoading');
+  var errorEl  = document.getElementById('videoError');
+
+  // Reset
+  videoEl.pause();
+  videoEl.src = '';
+  videoEl.style.display = 'none';
+  loading.classList.remove('hidden');
+  errorEl.classList.remove('visible');
+
+  var streamUrl = driveUrlToStream(driveUrl);
+
+  videoEl.src = streamUrl;
+  videoEl.load();
+
+  // Timeout fallback — if video doesn't load in 8 seconds, show error
+  var loadTimeout = setTimeout(function() {
+    if (loading && !loading.classList.contains('hidden')) {
+      loading.classList.add('hidden');
+      errorEl.classList.add('visible');
+    }
+  }, 8000);
+
+  videoEl.onloadedmetadata = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'block';
+    errorEl.classList.remove('visible');
+  };
+
+  videoEl.onerror = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'none';
+    errorEl.classList.add('visible');
+  };
+}
+
+function openDriveLink() {
+  if (currentDriveUrl) {
+    window.open(currentDriveUrl, '_blank');
+  }
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function navigate(dir) {
+  var nextIndex = currentIndex + dir;
+  if (nextIndex < 0 || nextIndex >= clips.length) return;
+
+  haptic('select');
+
+  // Animate out
+  var wrapper = document.getElementById('slideWrapper');
+  wrapper.className = 'clip-slide-wrapper ' + (dir > 0 ? 'slide-out-left' : 'slide-out-right');
+
+  setTimeout(function() {
+    wrapper.className = 'clip-slide-wrapper ' + (dir > 0 ? 'slide-in-right' : 'slide-in-left');
+    loadClip(nextIndex);
+  }, 200);
+}
+
+// Swipe support
+var touchStartX = 0;
+var touchStartY = 0;
+document.getElementById('clipViewer').addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById('clipViewer').addEventListener('touchend', function(e) {
+  var dx = touchStartX - e.changedTouches[0].clientX;
+  var dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
+  if (Math.abs(dx) > 50 && dy < 60) {
+    navigate(dx > 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+// ══════════════════════════════════════
+// ACTION SELECTION
+// ══════════════════════════════════════
+function selectAction(action) {
+  haptic('impact');
+
+  if (action === 'schedule') {
+    // Open schedule modal for this clip
+    scheduleTargetIndex = currentIndex;
+    openScheduleModal();
+    return;
+  }
+
+  // Save decision
+  decisions[currentIndex] = { action: action, scheduledAt: '' };
+
+  updateBadge(currentIndex);
+  updateButtonHighlights(currentIndex);
+  updateSaveBtn();
+}
+
+function updateBadge(index) {
+  var badge = document.getElementById('clipActionBadge');
+  var d = decisions[index];
+  if (!d) {
+    badge.className = 'clip-action-badge';
+    badge.textContent = '';
+    return;
+  }
+  var labels = { upload: 'העלאה מיידית', premium: 'פרימיום', schedule: 'מתוזמן', delete: 'נמחק' };
+  badge.textContent = labels[d.action] || '';
+  badge.className = 'clip-action-badge visible ' + d.action;
+}
+
+function updateButtonHighlights(index) {
+  var d = decisions[index];
+  var selectedAction = d ? d.action : null;
+  var actions = ['upload', 'premium', 'schedule', 'delete'];
+  actions.forEach(function(a) {
+    var btn = document.getElementById('btn-' + a);
+    if (btn) btn.classList.toggle('selected', a === selectedAction);
+  });
+}
+
+function updateSaveBtn() {
+  var count = Object.keys(decisions).length;
+  var total = clips.length;
+  var btn = document.getElementById('saveBtn');
+  var prog = document.getElementById('saveProgress');
+  btn.disabled = count === 0;
+  prog.textContent = count > 0 ? count + '/' + total + ' נבחרו' : '';
+}
+
+// ══════════════════════════════════════
+// SCHEDULE MODAL
+// ══════════════════════════════════════
+var HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+var HE_DAYS   = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+
+function openScheduleModal() {
+  calYear  = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+  selDate  = null;
+  document.getElementById('modalConfirmBtn').disabled = true;
+  renderCal();
+  document.getElementById('scheduleModal').classList.add('visible');
+}
+
+function cancelSchedule() {
+  document.getElementById('scheduleModal').classList.remove('visible');
+  scheduleTargetIndex = null;
+}
+
+function confirmSchedule() {
+  if (!selDate) return;
+
+  var year  = selDate.getFullYear();
+  var month = String(selDate.getMonth() + 1).padStart(2, '0');
+  var day   = String(selDate.getDate()).padStart(2, '0');
+  var hr    = String(selHour).padStart(2, '0');
+  var mn    = String(selMin).padStart(2, '0');
+  var scheduledAt = year + '-' + month + '-' + day + 'T' + hr + ':' + mn + ':00.000+03:00';
+
+  decisions[scheduleTargetIndex] = { action: 'schedule', scheduledAt: scheduledAt };
+
+  document.getElementById('scheduleModal').classList.remove('visible');
+  haptic('success');
+
+  // Refresh UI if still on the same clip
+  if (scheduleTargetIndex === currentIndex) {
+    updateBadge(currentIndex);
+    updateButtonHighlights(currentIndex);
+  }
+  updateSaveBtn();
+  scheduleTargetIndex = null;
+}
+
+function renderCal() {
+  document.getElementById('calMonthLabel').textContent = HE_MONTHS[calMonth] + ' ' + calYear;
+  var grid = document.getElementById('calGrid');
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  var html = HE_DAYS.map(function(d) { return '<div class="cal-day-header">' + d + '</div>'; }).join('');
+
+  var firstDay = new Date(calYear, calMonth, 1).getDay();
+  for (var i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+  var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  for (var d = 1; d <= daysInMonth; d++) {
+    var date = new Date(calYear, calMonth, d);
+    var isPast = date < today;
+    var isToday = date.getTime() === today.getTime();
+    var isSel = selDate && date.getTime() === selDate.getTime();
+    var cls = 'cal-day' + (isPast ? ' past' : '') + (isToday ? ' today' : '') + (isSel ? ' selected' : '');
+    var onclick = !isPast ? ' onclick="selectDay(' + calYear + ',' + calMonth + ',' + d + ')"' : '';
+    html += '<div class="' + cls + '"' + onclick + '>' + d + '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal(); }
+function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal(); }
+
+function selectDay(y, m, d) {
+  selDate = new Date(y, m, d);
+  renderCal();
+  document.getElementById('modalConfirmBtn').disabled = false;
+}
+
+function changeTime(type, dir) {
+  if (type === 'hr') {
+    selHour = (selHour + dir + 24) % 24;
+    document.getElementById('hrVal').textContent = pad(selHour);
+  } else {
+    selMin = (selMin + dir + 60) % 60;
+    document.getElementById('minVal').textContent = pad(selMin);
+  }
+}
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+// ══════════════════════════════════════
+// SAVE & SEND TO N8N
+// ══════════════════════════════════════
+function saveAll() {
+  haptic('success');
+
+  // Build payload — array of items
+  var items = clips.map(function(clip, i) {
+    var d = decisions[i] || { action: 'none', scheduledAt: '' };
+    return {
+      name:        clip.name || ('קליפ ' + (i + 1)),
+      driveUrl:    clip.driveUrl || '',
+      action:      d.action,
+      scheduledAt: d.scheduledAt || ''
+    };
+  });
+
+  var payload = {
+    chatId:  chatId,
+    clips:   JSON.stringify(items)
+  };
+
+  if (!resumeUrl) {
+    document.getElementById('success-state').classList.add('visible');
+    return;
+  }
+
+  // Send via image trick (CORS-free GET)
+  var qs = Object.keys(payload).map(function(k) {
+    return encodeURIComponent(k) + '=' + encodeURIComponent(payload[k]);
+  }).join('&');
+
+  var img = new Image();
+  img.onload = img.onerror = function() {};
+  img.src = resumeUrl + (resumeUrl.indexOf('?') >= 0 ? '&' : '?') + qs;
+
+  document.getElementById('success-state').classList.add('visible');
+  if (tg) tg.disableClosingConfirmation();
+}
+
+// ══════════════════════════════════════
+// START
+// ══════════════════════════════════════
+init();
+</script>
+</body>
+</html>
