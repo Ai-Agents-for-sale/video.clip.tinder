@@ -573,7 +573,7 @@ function driveContentToStream(driveUrl) {
   // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
   // Convert to export=view for direct streaming — bypasses Drive processing requirement
   if (!driveUrl) return '';
-  return driveUrl.replace('export=download', 'export=view');
+  return driveUrl;  // keep export=download — works even when Drive is still processing
 }
 
 function loadClip(index) {
