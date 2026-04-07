@@ -290,7 +290,7 @@
   .sched-panel {
     position: fixed;
     bottom: 0; left: 0;
-    width: 100%; /* not vw — avoids scrollbar/webview issues */
+    width: 100%;
     z-index: 101;
     background: #fff;
     border-radius: 20px 20px 0 0;
@@ -453,7 +453,7 @@
 
 </div>
 
-<!-- SCHEDULE MODAL — rebuilt -->
+<!-- SCHEDULE MODAL -->
 <div class="sched-backdrop" id="schedBackdrop" onclick="cancelSchedule()"></div>
 <div class="sched-panel" id="schedPanel">
   <div class="sched-grab"></div>
@@ -505,13 +505,13 @@ var pollingUrl = params.get('pollingUrl') || '';
 var folderId   = params.get('folderId')   || '';
 
 // STATE
-var clips        = [];
-var currentIndex = 0;
-var decisions    = {};
+var clips           = [];
+var currentIndex    = 0;
+var decisions       = {};
 var currentViewLink = '';
 var scheduleTargetIndex = null;
 
-// Init date/time fields with sensible defaults
+// Init date/time with +30min default
 (function() {
   var now = new Date();
   now.setMinutes(now.getMinutes() + 30);
@@ -569,11 +569,11 @@ function updateDots() {
 }
 
 // LOAD CLIP
-function driveUrlToPreview(webViewLink) {
-  if (!webViewLink) return '';
-  var match = webViewLink.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (!match) return '';
-  return 'https://drive.google.com/file/d/' + match[1] + '/preview';
+function driveContentToStream(driveUrl) {
+  // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
+  // Convert to export=view for direct streaming — bypasses Drive processing requirement
+  if (!driveUrl) return '';
+  return driveUrl.replace('export=download', 'export=view');
 }
 
 function loadClip(index) {
@@ -591,40 +591,55 @@ function loadClip(index) {
   document.getElementById('clipNameText').textContent = clip.name || ('קליפ ' + (index + 1));
   updateBadge(index);
   updateButtonHighlights(index);
-  loadVideo(clip.webViewLink);
+  loadVideo(clip.driveUrl);
 }
 
-function loadVideo(webViewLink) {
+function loadVideo(driveUrl) {
   var videoEl = document.getElementById('clipVideo');
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
+  // Remove old iframe if any
   var oldIframe = document.getElementById('driveIframe');
   if (oldIframe) oldIframe.remove();
 
+  videoEl.pause();
+  videoEl.src = '';
   videoEl.style.display = 'none';
   loading.classList.remove('hidden');
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
 
-  var previewUrl = driveUrlToPreview(webViewLink);
-  if (!previewUrl) {
+  var streamUrl = driveContentToStream(driveUrl);
+  if (!streamUrl) {
     loading.classList.add('hidden');
     errorEl.classList.add('visible');
     return;
   }
 
-  var iframe = document.createElement('iframe');
-  iframe.id = 'driveIframe';
-  iframe.src = previewUrl;
-  iframe.allow = 'autoplay';
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;z-index:2;';
-  iframe.onload = function() { loading.classList.add('hidden'); };
-  document.getElementById('videoWrap').appendChild(iframe);
+  var loadTimeout = setTimeout(function() {
+    if (!loading.classList.contains('hidden')) {
+      loading.classList.add('hidden');
+      errorEl.classList.add('visible');
+    }
+  }, 12000);
 
-  setTimeout(function() {
-    if (!loading.classList.contains('hidden')) loading.classList.add('hidden');
-  }, 6000);
+  videoEl.onloadedmetadata = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'block';
+    errorEl.classList.remove('visible');
+  };
+
+  videoEl.onerror = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'none';
+    errorEl.classList.add('visible');
+  };
+
+  videoEl.src = streamUrl;
+  videoEl.load();
 }
 
 function openDriveLink() {
@@ -709,8 +724,8 @@ function confirmSchedule() {
   if (!date || !time) return;
 
   var scheduledAt = date + 'T' + time + ':00.000+03:00';
-
   decisions[scheduleTargetIndex] = { action: 'schedule', scheduledAt: scheduledAt };
+
   document.getElementById('schedBackdrop').classList.remove('open');
   document.getElementById('schedPanel').classList.remove('open');
   haptic('success');
