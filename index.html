@@ -577,11 +577,13 @@ function updateDots() {
 // ══════════════════════════════════════
 // LOAD CLIP
 // ══════════════════════════════════════
-function driveContentToStream(url) {
-  // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
-  // We change export=download → export=view for streaming
-  if (!url) return '';
-  return url.replace('export=download', 'export=view');
+function driveUrlToPreview(webViewLink) {
+  // webViewLink: https://drive.google.com/file/d/FILE_ID/view?usp=drivesdk
+  // Convert to: https://drive.google.com/file/d/FILE_ID/preview
+  if (!webViewLink) return '';
+  var match = webViewLink.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) return '';
+  return 'https://drive.google.com/file/d/' + match[1] + '/preview';
 }
 
 function loadClip(index) {
@@ -589,7 +591,7 @@ function loadClip(index) {
   if (!clip) return;
 
   currentIndex    = index;
-  currentViewLink = clip.webViewLink || clip.driveUrl || '';
+  currentViewLink = clip.webViewLink || '';
 
   document.getElementById('clipCounter').textContent = (index + 1) + ' / ' + clips.length;
   document.getElementById('arrowRight').classList.toggle('hidden', index >= clips.length - 1);
@@ -599,32 +601,49 @@ function loadClip(index) {
   document.getElementById('clipNameText').textContent = clip.name || ('קליפ ' + (index + 1));
   updateBadge(index);
   updateButtonHighlights(index);
-  loadVideo(clip.driveUrl);
+  loadVideo(clip.webViewLink);
 }
 
-function loadVideo(driveUrl) {
+function loadVideo(webViewLink) {
   var videoEl = document.getElementById('clipVideo');
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
-  videoEl.pause();
-  videoEl.src = '';
+  // Remove old iframe if exists
+  var oldIframe = document.getElementById('driveIframe');
+  if (oldIframe) oldIframe.remove();
+
   videoEl.style.display = 'none';
   loading.classList.remove('hidden');
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
 
-  var streamUrl = driveContentToStream(driveUrl);
-  videoEl.src = streamUrl;
-  videoEl.load();
+  var previewUrl = driveUrlToPreview(webViewLink);
+  if (!previewUrl) {
+    loading.classList.add('hidden');
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  var iframe = document.createElement('iframe');
+  iframe.id = 'driveIframe';
+  iframe.src = previewUrl;
+  iframe.allow = 'autoplay';
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;z-index:2;';
+
+  iframe.onload = function() {
+    loading.classList.add('hidden');
+  };
+
+  document.getElementById('videoWrap').appendChild(iframe);
 
   var loadTimeout = setTimeout(function() {
     if (!loading.classList.contains('hidden')) {
       loading.classList.add('hidden');
-      errorEl.classList.add('visible');
     }
-  }, 10000);
+  }, 6000);
 
+  // dummy to satisfy old reference
   videoEl.onloadedmetadata = function() {
     clearTimeout(loadTimeout);
     loading.classList.add('hidden');
