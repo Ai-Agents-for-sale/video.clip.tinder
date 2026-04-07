@@ -8,32 +8,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:         #0a0d14;
-    --surface:    #12161f;
-    --surface2:   #1a1f2e;
-    --border:     rgba(255,255,255,0.08);
-    --border2:    rgba(255,255,255,0.14);
-    --text:       #f0f2f8;
-    --text-dim:   #8892aa;
-    --text-dimmer:#4a5268;
-    --accent:     #4f7cff;
-    --accent-soft:rgba(79,124,255,0.12);
-    --accent-glow:rgba(79,124,255,0.25);
-    --green:      #22c55e;
-    --green-soft: rgba(34,197,94,0.12);
-    --red:        #ef4444;
-    --red-soft:   rgba(239,68,68,0.12);
-    --gold:       #f59e0b;
-    --gold-soft:  rgba(245,158,11,0.12);
+    --bg:         #f0f4fb;
+    --surface:    #ffffff;
+    --surface2:   #e8edf8;
+    --border:     #c8d4e8;
+    --border2:    rgba(26,58,143,0.15);
+    --text:       #0D1B4B;
+    --text-dim:   #4a6080;
+    --text-dimmer:#8a9ab8;
+    --accent:     #1a3a8f;
+    --accent-soft:rgba(26,58,143,0.09);
+    --accent-glow:rgba(26,58,143,0.18);
+    --green:      #1a7a4a;
+    --green-soft: rgba(26,122,74,0.10);
+    --red:        #c0392b;
+    --red-soft:   rgba(192,57,43,0.10);
+    --gold:       #b07d10;
+    --gold-soft:  rgba(176,125,16,0.10);
     --radius:     16px;
     --radius-sm:  10px;
+    --shadow:     0 4px 24px rgba(26,58,143,0.10);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
   html, body {
     font-family: 'Heebo', sans-serif;
-    background: var(--bg);
+    background: linear-gradient(160deg, #f0f6ff 0%, #e8f0fe 60%, #dbeafe 100%);
     color: var(--text);
     overflow: hidden;
     height: 100dvh;
@@ -49,9 +50,7 @@
     overflow: hidden;
   }
 
-  /* ══════════════════════════════════
-     TOP BAR
-  ══════════════════════════════════ */
+  /* TOP BAR */
   .topbar {
     flex-shrink: 0;
     display: flex;
@@ -60,6 +59,7 @@
     padding: 12px 16px 10px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
+    box-shadow: 0 2px 12px rgba(26,58,124,0.08);
   }
   .topbar-title { font-size: 15px; font-weight: 800; color: var(--text); }
   .topbar-sub   { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
@@ -72,9 +72,7 @@
     color: var(--accent);
   }
 
-  /* ══════════════════════════════════
-     CLIP VIEWER
-  ══════════════════════════════════ */
+  /* CLIP VIEWER */
   .clip-viewer {
     flex: 1;
     position: relative;
@@ -88,16 +86,16 @@
     z-index: 20;
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.18);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
     color: #fff; font-size: 18px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: background 0.2s, opacity 0.2s;
     -webkit-user-select: none; user-select: none;
   }
-  .nav-arrow:active { background: rgba(255,255,255,0.2); }
+  .nav-arrow:active { background: rgba(255,255,255,0.3); }
   .nav-arrow.hidden { opacity: 0; pointer-events: none; }
   .nav-arrow.right { right: 10px; }
   .nav-arrow.left  { left: 10px; }
@@ -121,32 +119,32 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 12px;
-    background: var(--bg); z-index: 5;
+    background: #0a0d14; z-index: 5;
   }
   .video-loading.hidden { display: none; }
 
   .spinner {
     width: 36px; height: 36px;
-    border: 3px solid rgba(79,124,255,0.15);
+    border: 3px solid rgba(26,58,143,0.15);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 12px; color: var(--text-dim); }
+  .loading-text { font-size: 12px; color: #8892aa; }
 
   .video-error {
     position: absolute; inset: 0;
     display: none; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 10px;
-    background: var(--bg); z-index: 5;
+    background: #0a0d14; z-index: 5;
     padding: 20px; text-align: center;
   }
   .video-error.visible { display: flex; }
   .video-error-icon { font-size: 36px; }
-  .video-error-text { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-  .video-error-link { font-size: 12px; color: var(--accent); text-decoration: underline; cursor: pointer; }
+  .video-error-text { font-size: 13px; color: #8892aa; line-height: 1.5; }
+  .video-error-link { font-size: 12px; color: #4f7cff; text-decoration: underline; cursor: pointer; }
 
   .clip-name-overlay {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -169,7 +167,7 @@
   }
   .clip-action-badge.visible  { display: block; }
   .clip-action-badge.upload   { background: var(--green); color: #fff; }
-  .clip-action-badge.premium  { background: var(--gold);  color: #000; }
+  .clip-action-badge.premium  { background: var(--gold);  color: #fff; }
   .clip-action-badge.schedule { background: var(--accent); color: #fff; }
   .clip-action-badge.delete   { background: var(--red);   color: #fff; }
 
@@ -186,7 +184,7 @@
     flex: 1; min-width: 6px; max-width: 40px;
   }
   .dot-seg.done    { background: rgba(255,255,255,0.85); }
-  .dot-seg.current { background: var(--accent); }
+  .dot-seg.current { background: #4f7cff; }
 
   .clip-slide-wrapper {
     position: absolute; inset: 0;
@@ -199,14 +197,13 @@
   @keyframes slideInLeft  { from { transform: translateX(-80%); opacity:0; } to { transform: translateX(0); opacity:1; } }
   @keyframes slideInRight { from { transform: translateX(80%);  opacity:0; } to { transform: translateX(0); opacity:1; } }
 
-  /* ══════════════════════════════════
-     BOTTOM ACTIONS
-  ══════════════════════════════════ */
+  /* BOTTOM ACTIONS */
   .bottom-area {
     flex-shrink: 0;
     background: var(--surface);
     border-top: 1px solid var(--border);
     padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 12px rgba(26,58,124,0.08);
   }
 
   .action-grid {
@@ -219,10 +216,10 @@
     border-radius: var(--radius-sm);
     padding: 11px 8px;
     font-family: 'Heebo', sans-serif;
-    font-size: 12px; font-weight: 700;
+    font-size: 11.5px; font-weight: 700;
     cursor: pointer;
     transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
     border: 1.5px solid transparent;
     position: relative;
   }
@@ -237,15 +234,15 @@
     background: #fff;
   }
 
-  .btn-upload   { background: var(--green-soft); color: var(--green); border-color: rgba(34,197,94,0.25); }
-  .btn-premium  { background: var(--gold-soft);  color: var(--gold);  border-color: rgba(245,158,11,0.25); }
-  .btn-schedule { background: var(--accent-soft);color: var(--accent);border-color: rgba(79,124,255,0.25); }
-  .btn-delete   { background: var(--red-soft);   color: var(--red);   border-color: rgba(239,68,68,0.25); }
+  .btn-upload   { background: var(--green-soft); color: var(--green); border-color: rgba(26,122,74,0.25); }
+  .btn-premium  { background: var(--gold-soft);  color: var(--gold);  border-color: rgba(176,125,16,0.25); }
+  .btn-schedule { background: var(--accent-soft);color: var(--accent);border-color: rgba(26,58,143,0.2); }
+  .btn-delete   { background: var(--red-soft);   color: var(--red);   border-color: rgba(192,57,43,0.2); }
 
-  .btn-upload.selected   { background: var(--green); color:#fff; border-color:var(--green); box-shadow:0 4px 14px rgba(34,197,94,0.35); }
-  .btn-premium.selected  { background: var(--gold);  color:#000; border-color:var(--gold);  box-shadow:0 4px 14px rgba(245,158,11,0.35); }
-  .btn-schedule.selected { background: var(--accent);color:#fff; border-color:var(--accent);box-shadow:0 4px 14px rgba(79,124,255,0.35); }
-  .btn-delete.selected   { background: var(--red);   color:#fff; border-color:var(--red);   box-shadow:0 4px 14px rgba(239,68,68,0.35); }
+  .btn-upload.selected   { background: var(--green); color:#fff; border-color:var(--green); box-shadow:0 4px 14px rgba(26,122,74,0.3); }
+  .btn-premium.selected  { background: var(--gold);  color:#fff; border-color:var(--gold);  box-shadow:0 4px 14px rgba(176,125,16,0.3); }
+  .btn-schedule.selected { background: var(--accent);color:#fff; border-color:var(--accent);box-shadow:0 4px 14px rgba(26,58,143,0.3); }
+  .btn-delete.selected   { background: var(--red);   color:#fff; border-color:var(--red);   box-shadow:0 4px 14px rgba(192,57,43,0.3); }
 
   .btn-upload.selected::after   { color: var(--green); }
   .btn-premium.selected::after  { color: var(--gold); }
@@ -254,7 +251,7 @@
 
   .save-btn {
     width: 100%;
-    background: linear-gradient(135deg, #4f7cff, #7c5cfc);
+    background: linear-gradient(135deg, #1a3a8f, #2d5fc4);
     color: #fff; border: none;
     border-radius: var(--radius-sm);
     padding: 13px;
@@ -262,7 +259,7 @@
     font-size: 15px; font-weight: 800;
     cursor: pointer;
     transition: opacity 0.2s, transform 0.15s;
-    box-shadow: 0 4px 18px rgba(79,124,255,0.3);
+    box-shadow: 0 4px 15px rgba(26,58,143,0.2);
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .save-btn:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
@@ -270,17 +267,15 @@
 
   .save-progress {
     font-size: 11px; font-weight: 600;
-    background: rgba(79,124,255,0.2);
+    background: rgba(255,255,255,0.2);
     color: #fff; border-radius: 20px;
     padding: 2px 8px;
   }
 
-  /* ══════════════════════════════════
-     SCHEDULE MODAL
-  ══════════════════════════════════ */
+  /* SCHEDULE MODAL */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65);
+    background: rgba(26,58,124,0.35);
     backdrop-filter: blur(4px);
     z-index: 100;
     display: none; align-items: flex-end; justify-content: center;
@@ -288,75 +283,69 @@
   .modal-overlay.visible { display: flex; }
 
   .modal-sheet {
-    background: var(--surface2);
-    border-top-left-radius: 20px; border-top-right-radius: 20px;
+    background: var(--surface);
+    border-top-left-radius: 24px; border-top-right-radius: 24px;
     width: 100%; max-width: 480px;
-    padding: 0 0 calc(20px + env(safe-area-inset-bottom));
+    padding: 0 0 calc(24px + env(safe-area-inset-bottom));
     animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1) both;
+    box-shadow: 0 -4px 24px rgba(26,58,143,0.12);
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-  .modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
-  .modal-title  { font-size: 15px; font-weight: 800; color: var(--text); padding: 14px 18px 12px; border-bottom: 1px solid var(--border); }
-  .modal-body   { padding: 16px; }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+  .modal-title  { font-size: 17px; font-weight: 800; color: var(--text); padding: 14px 18px 16px; border-bottom: 1px solid var(--border); }
+  .modal-body   { padding: 20px 18px; }
 
-  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .cal-nav-btn {
-    background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
-    width: 32px; height: 32px; color: var(--text); font-size: 16px; font-weight: 700;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  .schedule-field { margin-bottom: 16px; }
+  .schedule-field label {
+    display: block;
+    font-size: 12px; font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  .cal-nav-btn:active { background: var(--border2); }
-  .cal-month-label { font-size: 14px; font-weight: 700; color: var(--text); }
-
-  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 14px; }
-  .cal-day-header { text-align:center; font-size:10px; font-weight:700; color:var(--text-dimmer); padding:3px 0; }
-  .cal-day {
-    text-align:center; padding:7px 2px; border-radius:8px;
-    font-size:13px; font-weight:500; color:var(--text);
-    cursor:pointer; transition:background 0.12s;
-    min-height:34px; display:flex; align-items:center; justify-content:center;
+  .schedule-field input[type="date"],
+  .schedule-field input[type="time"] {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px 14px;
+    font-size: 16px; font-weight: 600;
+    font-family: 'Heebo', sans-serif;
+    color: var(--text);
+    background: var(--surface2);
+    outline: none;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(26,58,143,0.06);
   }
-  .cal-day.empty { cursor:default; }
-  .cal-day.past  { color:var(--text-dimmer); cursor:default; }
-  .cal-day.today { color:var(--accent); font-weight:800; }
-  .cal-day.selected { background:var(--accent); color:#fff; font-weight:700; }
-  .cal-day:hover:not(.empty):not(.past) { background:var(--border2); }
-  .cal-day.selected:hover { background:var(--accent); }
-
-  .time-row { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px; }
-  .time-col  { display:flex; flex-direction:column; align-items:center; gap:4px; }
-  .time-lbl  { font-size:10px; font-weight:700; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:0.06em; }
-  .time-scroll { background:var(--surface); border:1px solid var(--border2); border-radius:10px; overflow:hidden; width:62px; }
-  .time-btn { background:none; border:none; width:100%; padding:7px 0; font-size:12px; color:var(--accent); cursor:pointer; font-weight:700; font-family:'Heebo',sans-serif; }
-  .time-btn:active { background:var(--border); }
-  .time-val { font-size:24px; font-weight:800; color:var(--text); padding:5px 0; text-align:center; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--surface2); font-family:'Heebo',sans-serif; }
-  .time-sep { font-size:26px; font-weight:800; color:var(--text); margin-top:28px; }
+  .schedule-field input:focus { border-color: var(--accent); }
 
   .modal-confirm-btn {
-    width:100%; background:var(--accent); color:#fff; border:none;
-    border-radius:var(--radius-sm); padding:14px;
-    font-family:'Heebo',sans-serif; font-size:15px; font-weight:800;
-    cursor:pointer; transition:opacity 0.15s;
+    width: 100%; background: linear-gradient(135deg, #1a3a8f, #2d5fc4);
+    color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 14px;
+    font-family: 'Heebo', sans-serif; font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: opacity 0.15s;
+    box-shadow: 0 4px 15px rgba(26,58,143,0.2);
+    margin-bottom: 10px;
   }
-  .modal-confirm-btn:disabled { opacity:0.3; cursor:default; }
-  .modal-confirm-btn:not(:disabled):active { opacity:0.8; }
-  .modal-cancel { width:100%; background:none; border:none; color:var(--text-dim); font-family:'Heebo',sans-serif; font-size:13px; font-weight:600; cursor:pointer; padding:10px; margin-top:4px; }
+  .modal-confirm-btn:disabled { opacity: 0.3; cursor: default; }
+  .modal-confirm-btn:not(:disabled):active { opacity: 0.8; }
+  .modal-cancel { width: 100%; background: none; border: none; color: var(--text-dim); font-family: 'Heebo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px; }
 
-  /* ══════════════════════════════════
-     FULL-SCREEN STATES
-  ══════════════════════════════════ */
+  /* FULL STATES */
   .fullstate {
     display: none;
     position: fixed; inset: 0;
     flex-direction: column; align-items: center; justify-content: center;
-    gap: 16px; background: var(--bg);
+    gap: 16px;
+    background: linear-gradient(160deg, #f0f6ff 0%, #e8f0fe 60%, #dbeafe 100%);
     text-align: center; padding: 32px; z-index: 200;
   }
   .fullstate.visible { display: flex; }
-
   .state-icon  { font-size: 54px; line-height: 1; }
-  .state-title { font-size: 20px; font-weight: 900; }
+  .state-title { font-size: 20px; font-weight: 900; color: var(--text); }
   .state-sub   { font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 280px; }
 </style>
 </head>
@@ -368,7 +357,7 @@
   <div class="topbar">
     <div>
       <div class="topbar-title">🎬 סקירת קליפים</div>
-      <div class="topbar-sub">בחר פעולה לכל קליפ ולחץ שמור</div>
+      <div class="topbar-sub">בחר פעולה לכל קליפ ולחץ שמור בסוף התהליך</div>
     </div>
     <div class="clip-counter" id="clipCounter">— / —</div>
   </div>
@@ -409,9 +398,9 @@
   <div class="bottom-area">
     <div class="action-grid">
       <button class="action-btn btn-upload"   id="btn-upload"   onclick="selectAction('upload')">⬆️ העלה עכשיו</button>
-      <button class="action-btn btn-premium"  id="btn-premium"  onclick="selectAction('premium')">⭐ עריכת פרימיום</button>
+      <button class="action-btn btn-premium"  id="btn-premium"  onclick="selectAction('premium')">⭐ שלח לעריכת פרימיום</button>
       <button class="action-btn btn-schedule" id="btn-schedule" onclick="selectAction('schedule')">📅 תזמן העלאה</button>
-      <button class="action-btn btn-delete"   id="btn-delete"   onclick="selectAction('delete')">🗑️ מחק קליפ</button>
+      <button class="action-btn btn-delete"   id="btn-delete"   onclick="selectAction('delete')">🗑️ מחק קליפ מהתיקייה</button>
     </div>
     <button class="save-btn" id="saveBtn" onclick="saveAll()" disabled>
       💾 שמור ושלח שינויים
@@ -427,32 +416,15 @@
     <div class="modal-handle"></div>
     <div class="modal-title">📅 בחר תאריך ושעה לפרסום</div>
     <div class="modal-body">
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="calPrev()">›</button>
-        <span class="cal-month-label" id="calMonthLabel"></span>
-        <button class="cal-nav-btn" onclick="calNext()">‹</button>
+      <div class="schedule-field">
+        <label>תאריך פרסום</label>
+        <input type="date" id="schedDate" />
       </div>
-      <div class="cal-grid" id="calGrid"></div>
-      <div class="time-row">
-        <div class="time-col">
-          <div class="time-lbl">דקות</div>
-          <div class="time-scroll">
-            <button class="time-btn" onclick="changeTime('min',1)">▲</button>
-            <div class="time-val" id="minVal">00</div>
-            <button class="time-btn" onclick="changeTime('min',-1)">▼</button>
-          </div>
-        </div>
-        <div class="time-sep">:</div>
-        <div class="time-col">
-          <div class="time-lbl">שעה</div>
-          <div class="time-scroll">
-            <button class="time-btn" onclick="changeTime('hr',1)">▲</button>
-            <div class="time-val" id="hrVal">09</div>
-            <button class="time-btn" onclick="changeTime('hr',-1)">▼</button>
-          </div>
-        </div>
+      <div class="schedule-field">
+        <label>שעת פרסום</label>
+        <input type="time" id="schedTime" />
       </div>
-      <button class="modal-confirm-btn" id="modalConfirmBtn" onclick="confirmSchedule()" disabled>אשר תזמון</button>
+      <button class="modal-confirm-btn" id="modalConfirmBtn" onclick="confirmSchedule()">אשר תזמון ✓</button>
       <button class="modal-cancel" onclick="cancelSchedule()">ביטול</button>
     </div>
   </div>
@@ -478,9 +450,7 @@
 </div>
 
 <script>
-// ══════════════════════════════════════
 // TELEGRAM
-// ══════════════════════════════════════
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.enableClosingConfirmation(); }
 
@@ -491,59 +461,49 @@ function haptic(type) {
   if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
 }
 
-// ══════════════════════════════════════
-// URL PARAMS — רק resumeUrl, chatId, pollingUrl
-// ══════════════════════════════════════
+// URL PARAMS
 var params     = new URLSearchParams(window.location.search);
 var resumeUrl  = params.get('resumeUrl')  || '';
 var chatId     = params.get('chatId')     || '';
 var pollingUrl = params.get('pollingUrl') || '';
 var folderId   = params.get('folderId')   || '';
 
-// ══════════════════════════════════════
 // STATE
-// ══════════════════════════════════════
-var clips        = [];       // [{ name, driveUrl, webViewLink }]
+var clips        = [];
 var currentIndex = 0;
-var decisions    = {};       // { index: { action, scheduledAt } }
+var decisions    = {};
 var currentViewLink = '';
-
-// Schedule modal
-var calYear  = new Date().getFullYear();
-var calMonth = new Date().getMonth();
-var selDate  = null;
-var selHour  = 9;
-var selMin   = 0;
 var scheduleTargetIndex = null;
 
-var HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-var HE_DAYS   = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+// Init date/time fields with sensible defaults
+(function() {
+  var now = new Date();
+  now.setMinutes(now.getMinutes() + 30);
+  var yyyy = now.getFullYear();
+  var mm   = String(now.getMonth()+1).padStart(2,'0');
+  var dd   = String(now.getDate()).padStart(2,'0');
+  var hh   = String(now.getHours()).padStart(2,'0');
+  var min  = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('schedDate').value = yyyy + '-' + mm + '-' + dd;
+  document.getElementById('schedTime').value = hh + ':' + min;
+})();
 
-// ══════════════════════════════════════
-// INIT — fetch clips via polling webhook
-// ══════════════════════════════════════
+// INIT
 function init() {
-  if (!pollingUrl) {
-    showState('error');
-    return;
-  }
+  if (!pollingUrl) { showState('error'); return; }
   fetchClips();
 }
 
 function fetchClips() {
   document.getElementById('loadingText').textContent = 'טוען קליפים...';
-
   fetch(pollingUrl + (pollingUrl.indexOf('?') >= 0 ? '&' : '?') + 'folderId=' + encodeURIComponent(folderId))
     .then(function(res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     })
     .then(function(data) {
-      if (!data || !data.clips || data.clips.length === 0) {
-        showState('empty');
-        return;
-      }
-      clips = data.clips; // [{ name, driveUrl, webViewLink }]
+      if (!data || !data.clips || data.clips.length === 0) { showState('empty'); return; }
+      clips = data.clips;
       buildDots();
       loadClip(0);
     })
@@ -553,9 +513,7 @@ function fetchClips() {
     });
 }
 
-// ══════════════════════════════════════
 // DOTS
-// ══════════════════════════════════════
 function buildDots() {
   var row = document.getElementById('dotsRow');
   var html = '';
@@ -574,12 +532,8 @@ function updateDots() {
   }
 }
 
-// ══════════════════════════════════════
 // LOAD CLIP
-// ══════════════════════════════════════
 function driveUrlToPreview(webViewLink) {
-  // webViewLink: https://drive.google.com/file/d/FILE_ID/view?usp=drivesdk
-  // Convert to: https://drive.google.com/file/d/FILE_ID/preview
   if (!webViewLink) return '';
   var match = webViewLink.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (!match) return '';
@@ -609,7 +563,6 @@ function loadVideo(webViewLink) {
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
-  // Remove old iframe if exists
   var oldIframe = document.getElementById('driveIframe');
   if (oldIframe) oldIframe.remove();
 
@@ -630,47 +583,23 @@ function loadVideo(webViewLink) {
   iframe.src = previewUrl;
   iframe.allow = 'autoplay';
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;z-index:2;';
-
-  iframe.onload = function() {
-    loading.classList.add('hidden');
-  };
-
+  iframe.onload = function() { loading.classList.add('hidden'); };
   document.getElementById('videoWrap').appendChild(iframe);
 
-  var loadTimeout = setTimeout(function() {
-    if (!loading.classList.contains('hidden')) {
-      loading.classList.add('hidden');
-    }
+  setTimeout(function() {
+    if (!loading.classList.contains('hidden')) loading.classList.add('hidden');
   }, 6000);
-
-  // dummy to satisfy old reference
-  videoEl.onloadedmetadata = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'block';
-    errorEl.classList.remove('visible');
-  };
-
-  videoEl.onerror = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'none';
-    errorEl.classList.add('visible');
-  };
 }
 
 function openDriveLink() {
   if (currentViewLink) window.open(currentViewLink, '_blank');
 }
 
-// ══════════════════════════════════════
 // NAVIGATION
-// ══════════════════════════════════════
 function navigate(dir) {
   var next = currentIndex + dir;
   if (next < 0 || next >= clips.length) return;
   haptic('select');
-
   var wrapper = document.getElementById('slideWrapper');
   wrapper.className = 'clip-slide-wrapper ' + (dir > 0 ? 'slide-out-left' : 'slide-out-right');
   setTimeout(function() {
@@ -679,7 +608,6 @@ function navigate(dir) {
   }, 200);
 }
 
-// Swipe
 var touchStartX = 0, touchStartY = 0;
 document.getElementById('clipViewer').addEventListener('touchstart', function(e) {
   touchStartX = e.touches[0].clientX;
@@ -691,14 +619,12 @@ document.getElementById('clipViewer').addEventListener('touchend', function(e) {
   if (Math.abs(dx) > 50 && dy < 60) navigate(dx > 0 ? 1 : -1);
 }, { passive: true });
 
-// ══════════════════════════════════════
 // ACTION BUTTONS
-// ══════════════════════════════════════
 function selectAction(action) {
   haptic('impact');
   if (action === 'schedule') {
     scheduleTargetIndex = currentIndex;
-    openScheduleModal();
+    document.getElementById('scheduleModal').classList.add('visible');
     return;
   }
   decisions[currentIndex] = { action: action, scheduledAt: '' };
@@ -733,35 +659,23 @@ function updateSaveBtn() {
   prog.textContent = count > 0 ? count + '/' + clips.length + ' נבחרו' : '';
 }
 
-// ══════════════════════════════════════
 // SCHEDULE MODAL
-// ══════════════════════════════════════
-function openScheduleModal() {
-  calYear = new Date().getFullYear();
-  calMonth = new Date().getMonth();
-  selDate = null;
-  document.getElementById('modalConfirmBtn').disabled = true;
-  renderCal();
-  document.getElementById('scheduleModal').classList.add('visible');
-}
-
 function cancelSchedule() {
   document.getElementById('scheduleModal').classList.remove('visible');
   scheduleTargetIndex = null;
 }
 
 function confirmSchedule() {
-  if (!selDate) return;
-  var scheduledAt = selDate.getFullYear()
-    + '-' + String(selDate.getMonth() + 1).padStart(2,'0')
-    + '-' + String(selDate.getDate()).padStart(2,'0')
-    + 'T' + String(selHour).padStart(2,'0')
-    + ':' + String(selMin).padStart(2,'0')
-    + ':00.000+03:00';
+  var date = document.getElementById('schedDate').value;
+  var time = document.getElementById('schedTime').value;
+  if (!date || !time) return;
+
+  var scheduledAt = date + 'T' + time + ':00.000+03:00';
 
   decisions[scheduleTargetIndex] = { action: 'schedule', scheduledAt: scheduledAt };
   document.getElementById('scheduleModal').classList.remove('visible');
   haptic('success');
+
   if (scheduleTargetIndex === currentIndex) {
     updateBadge(currentIndex);
     updateButtonHighlights(currentIndex);
@@ -770,56 +684,18 @@ function confirmSchedule() {
   scheduleTargetIndex = null;
 }
 
-function renderCal() {
-  document.getElementById('calMonthLabel').textContent = HE_MONTHS[calMonth] + ' ' + calYear;
-  var grid = document.getElementById('calGrid');
-  var today = new Date(); today.setHours(0,0,0,0);
-  var html = HE_DAYS.map(function(d) { return '<div class="cal-day-header">' + d + '</div>'; }).join('');
-  var firstDay = new Date(calYear, calMonth, 1).getDay();
-  for (var i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
-  var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  for (var d = 1; d <= daysInMonth; d++) {
-    var date = new Date(calYear, calMonth, d);
-    var isPast = date < today;
-    var isToday = date.getTime() === today.getTime();
-    var isSel = selDate && date.getTime() === selDate.getTime();
-    var cls = 'cal-day' + (isPast?' past':'') + (isToday?' today':'') + (isSel?' selected':'');
-    var oc = !isPast ? ' onclick="selectDay(' + calYear + ',' + calMonth + ',' + d + ')"' : '';
-    html += '<div class="' + cls + '"' + oc + '>' + d + '</div>';
-  }
-  grid.innerHTML = html;
-}
-
-function calPrev() { calMonth--; if (calMonth < 0) { calMonth=11; calYear--; } renderCal(); }
-function calNext() { calMonth++; if (calMonth > 11) { calMonth=0;  calYear++; } renderCal(); }
-
-function selectDay(y, m, d) {
-  selDate = new Date(y, m, d);
-  renderCal();
-  document.getElementById('modalConfirmBtn').disabled = false;
-}
-
-function changeTime(type, dir) {
-  if (type === 'hr') { selHour = (selHour + dir + 24) % 24; document.getElementById('hrVal').textContent = pad(selHour); }
-  else               { selMin  = (selMin  + dir + 60) % 60; document.getElementById('minVal').textContent = pad(selMin); }
-}
-
-function pad(n) { return n < 10 ? '0'+n : ''+n; }
-
-// ══════════════════════════════════════
-// SAVE & SEND TO N8N
-// ══════════════════════════════════════
+// SAVE & SEND
 function saveAll() {
   haptic('success');
 
-  // Build array — one item per clip
   var items = clips.map(function(clip, i) {
     var d = decisions[i] || { action: 'none', scheduledAt: '' };
     return {
-      name:        clip.name || ('קליפ ' + (i + 1)),
-      driveUrl:    clip.driveUrl || '',
+      name:        clip.name        || ('קליפ ' + (i + 1)),
+      driveUrl:    clip.driveUrl    || '',
+      webViewLink: clip.webViewLink || '',
       action:      d.action,
-      scheduledAt: d.scheduledAt || ''
+      scheduledAt: d.scheduledAt   || ''
     };
   });
 
@@ -842,9 +718,7 @@ function saveAll() {
   if (tg) tg.disableClosingConfirmation();
 }
 
-// ══════════════════════════════════════
 // STATE MANAGEMENT
-// ══════════════════════════════════════
 function showState(name) {
   ['success','empty','error'].forEach(function(s) {
     document.getElementById('state-' + s).classList.remove('visible');
@@ -852,9 +726,6 @@ function showState(name) {
   document.getElementById('state-' + name).classList.add('visible');
 }
 
-// ══════════════════════════════════════
-// START
-// ══════════════════════════════════════
 init();
 </script>
 </body>
