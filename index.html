@@ -320,6 +320,8 @@
     outline: none;
     transition: border-color 0.2s;
     box-shadow: 0 2px 8px rgba(26,58,143,0.06);
+    direction: ltr;
+    text-align: center;
   }
   .schedule-field input:focus { border-color: var(--accent); }
 
@@ -413,8 +415,8 @@
 </div>
 
 <!-- SCHEDULE MODAL -->
-<div class="modal-overlay" id="scheduleModal">
-  <div class="modal-sheet">
+<div class="modal-overlay" id="scheduleModal" dir="ltr">
+  <div class="modal-sheet" dir="rtl">
     <div class="modal-handle"></div>
     <div class="modal-title">📅 בחר תאריך ושעה לפרסום</div>
     <div class="modal-body">
