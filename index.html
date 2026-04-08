@@ -592,7 +592,6 @@ function loadVideo(driveUrl) {
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
-  // Remove old iframe if any
   var oldIframe = document.getElementById('driveIframe');
   if (oldIframe) oldIframe.remove();
 
@@ -609,34 +608,40 @@ function loadVideo(driveUrl) {
     return;
   }
 
-  // Use iframe for Dropbox — works on mobile without redirect issues
-  var iframe = document.createElement('iframe');
-  iframe.id = 'driveIframe';
-  iframe.src = driveUrl;
-  iframe.allow = 'autoplay';
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;z-index:2;';
-  iframe.onload = function() { loading.classList.add('hidden'); };
-  document.getElementById('videoWrap').appendChild(iframe);
+  // Fetch with redirect:follow to get the final dl.dropboxusercontent.com URL
+  fetch(driveUrl, { method: 'GET', redirect: 'follow' })
+    .then(function(res) {
+      return res.url; // This is the final URL after all redirects
+    })
+    .then(function(finalUrl) {
+      var loadTimeout = setTimeout(function() {
+        if (!loading.classList.contains('hidden')) {
+          loading.classList.add('hidden');
+          errorEl.classList.add('visible');
+        }
+      }, 12000);
 
-  setTimeout(function() {
-    if (!loading.classList.contains('hidden')) loading.classList.add('hidden');
-  }, 8000);
+      videoEl.onloadedmetadata = function() {
+        clearTimeout(loadTimeout);
+        loading.classList.add('hidden');
+        videoEl.style.display = 'block';
+        errorEl.classList.remove('visible');
+      };
 
-  // dummy
-  var loadTimeout = null;
-  videoEl.onloadedmetadata = function() {
-    loading.classList.add('hidden');
-    videoEl.style.display = 'block';
-    errorEl.classList.remove('visible');
-  };
+      videoEl.onerror = function() {
+        clearTimeout(loadTimeout);
+        loading.classList.add('hidden');
+        videoEl.style.display = 'none';
+        errorEl.classList.add('visible');
+      };
 
-  videoEl.onerror = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'none';
-    errorEl.classList.add('visible');
-  };
-
+      videoEl.src = finalUrl;
+      videoEl.load();
+    })
+    .catch(function() {
+      loading.classList.add('hidden');
+      errorEl.classList.add('visible');
+    });
 }
 
 function openDriveLink() {
