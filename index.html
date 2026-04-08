@@ -569,6 +569,13 @@ function updateDots() {
 }
 
 // LOAD CLIP
+function driveContentToStream(driveUrl) {
+  // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
+  // Convert to export=view for direct streaming — bypasses Drive processing requirement
+  if (!driveUrl) return '';
+  return driveUrl;  // keep export=download — works even when Drive is still processing
+}
+
 function loadClip(index) {
   var clip = clips[index];
   if (!clip) return;
@@ -592,6 +599,7 @@ function loadVideo(driveUrl) {
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
+  // Remove old iframe if any
   var oldIframe = document.getElementById('driveIframe');
   if (oldIframe) oldIframe.remove();
 
@@ -602,46 +610,36 @@ function loadVideo(driveUrl) {
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
 
-  if (!driveUrl) {
+  var streamUrl = driveContentToStream(driveUrl);
+  if (!streamUrl) {
     loading.classList.add('hidden');
     errorEl.classList.add('visible');
     return;
   }
 
-  // Fetch with redirect:follow to get the final dl.dropboxusercontent.com URL
-  fetch(driveUrl, { method: 'GET', redirect: 'follow' })
-    .then(function(res) {
-      return res.url; // This is the final URL after all redirects
-    })
-    .then(function(finalUrl) {
-      var loadTimeout = setTimeout(function() {
-        if (!loading.classList.contains('hidden')) {
-          loading.classList.add('hidden');
-          errorEl.classList.add('visible');
-        }
-      }, 12000);
-
-      videoEl.onloadedmetadata = function() {
-        clearTimeout(loadTimeout);
-        loading.classList.add('hidden');
-        videoEl.style.display = 'block';
-        errorEl.classList.remove('visible');
-      };
-
-      videoEl.onerror = function() {
-        clearTimeout(loadTimeout);
-        loading.classList.add('hidden');
-        videoEl.style.display = 'none';
-        errorEl.classList.add('visible');
-      };
-
-      videoEl.src = finalUrl;
-      videoEl.load();
-    })
-    .catch(function() {
+  var loadTimeout = setTimeout(function() {
+    if (!loading.classList.contains('hidden')) {
       loading.classList.add('hidden');
       errorEl.classList.add('visible');
-    });
+    }
+  }, 12000);
+
+  videoEl.onloadedmetadata = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'block';
+    errorEl.classList.remove('visible');
+  };
+
+  videoEl.onerror = function() {
+    clearTimeout(loadTimeout);
+    loading.classList.add('hidden');
+    videoEl.style.display = 'none';
+    errorEl.classList.add('visible');
+  };
+
+  videoEl.src = streamUrl;
+  videoEl.load();
 }
 
 function openDriveLink() {
