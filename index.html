@@ -569,13 +569,6 @@ function updateDots() {
 }
 
 // LOAD CLIP
-function driveContentToStream(driveUrl) {
-  // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
-  // Convert to export=view for direct streaming — bypasses Drive processing requirement
-  if (!driveUrl) return '';
-  return driveUrl;  // keep export=download — works even when Drive is still processing
-}
-
 function loadClip(index) {
   var clip = clips[index];
   if (!clip) return;
@@ -610,22 +603,28 @@ function loadVideo(driveUrl) {
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
 
-  var streamUrl = driveContentToStream(driveUrl);
-  if (!streamUrl) {
+  if (!driveUrl) {
     loading.classList.add('hidden');
     errorEl.classList.add('visible');
     return;
   }
 
-  var loadTimeout = setTimeout(function() {
-    if (!loading.classList.contains('hidden')) {
-      loading.classList.add('hidden');
-      errorEl.classList.add('visible');
-    }
-  }, 12000);
+  // Use iframe for Dropbox — works on mobile without redirect issues
+  var iframe = document.createElement('iframe');
+  iframe.id = 'driveIframe';
+  iframe.src = driveUrl;
+  iframe.allow = 'autoplay';
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;z-index:2;';
+  iframe.onload = function() { loading.classList.add('hidden'); };
+  document.getElementById('videoWrap').appendChild(iframe);
 
+  setTimeout(function() {
+    if (!loading.classList.contains('hidden')) loading.classList.add('hidden');
+  }, 8000);
+
+  // dummy
+  var loadTimeout = null;
   videoEl.onloadedmetadata = function() {
-    clearTimeout(loadTimeout);
     loading.classList.add('hidden');
     videoEl.style.display = 'block';
     errorEl.classList.remove('visible');
