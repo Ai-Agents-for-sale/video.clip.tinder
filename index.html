@@ -272,7 +272,7 @@
     padding: 2px 8px;
   }
 
-  /* SCHEDULE MODAL — rebuilt from scratch */
+  /* SCHEDULE MODAL */
   .sched-backdrop {
     position: fixed;
     top: 0; left: 0;
@@ -426,7 +426,7 @@
           <div class="video-error-link" onclick="openDriveLink()">פתח ב-Google Drive ↗</div>
         </div>
 
-        <video id="clipVideo" class="clip-video" playsinline controls preload="metadata"></video>
+        <video id="clipVideo" class="clip-video" playsinline controls></video>
 
         <div class="clip-name-overlay">
           <div class="clip-name-text" id="clipNameText"></div>
@@ -510,6 +510,7 @@ var currentIndex    = 0;
 var decisions       = {};
 var currentViewLink = '';
 var scheduleTargetIndex = null;
+var currentBlobUrl  = null;
 
 // Init date/time with +30min default
 (function() {
@@ -569,13 +570,6 @@ function updateDots() {
 }
 
 // LOAD CLIP
-function driveContentToStream(driveUrl) {
-  // webContentLink: https://drive.google.com/uc?export=download&id=FILE_ID
-  // Convert to export=view for direct streaming — bypasses Drive processing requirement
-  if (!driveUrl) return '';
-  return driveUrl;  // keep export=download — works even when Drive is still processing
-}
-
 function loadClip(index) {
   var clip = clips[index];
   if (!clip) return;
@@ -599,19 +593,20 @@ function loadVideo(driveUrl) {
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
 
-  // Remove old iframe if any
-  var oldIframe = document.getElementById('driveIframe');
-  if (oldIframe) oldIframe.remove();
+  // Revoke previous blob URL to free memory
+  if (currentBlobUrl) {
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
 
   videoEl.pause();
-  videoEl.src = '';
+  videoEl.removeAttribute('src');
   videoEl.style.display = 'none';
   loading.classList.remove('hidden');
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
 
-  var streamUrl = driveContentToStream(driveUrl);
-  if (!streamUrl) {
+  if (!driveUrl) {
     loading.classList.add('hidden');
     errorEl.classList.add('visible');
     return;
@@ -622,24 +617,41 @@ function loadVideo(driveUrl) {
       loading.classList.add('hidden');
       errorEl.classList.add('visible');
     }
-  }, 12000);
+  }, 60000);
 
-  videoEl.onloadedmetadata = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'block';
-    errorEl.classList.remove('visible');
-  };
+  fetch(driveUrl, { redirect: 'follow' })
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.blob();
+    })
+    .then(function(blob) {
+      clearTimeout(loadTimeout);
+      var blobUrl = URL.createObjectURL(blob);
+      currentBlobUrl = blobUrl;
 
-  videoEl.onerror = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'none';
-    errorEl.classList.add('visible');
-  };
+      videoEl.onloadedmetadata = function() {
+        loading.classList.add('hidden');
+        videoEl.style.display = 'block';
+        errorEl.classList.remove('visible');
+      };
 
-  videoEl.src = streamUrl;
-  videoEl.load();
+      videoEl.onerror = function() {
+        loading.classList.add('hidden');
+        videoEl.style.display = 'none';
+        errorEl.classList.add('visible');
+        URL.revokeObjectURL(blobUrl);
+        currentBlobUrl = null;
+      };
+
+      videoEl.src = blobUrl;
+      videoEl.load();
+    })
+    .catch(function(err) {
+      clearTimeout(loadTimeout);
+      console.error('Fetch video error:', err);
+      loading.classList.add('hidden');
+      errorEl.classList.add('visible');
+    });
 }
 
 function openDriveLink() {
