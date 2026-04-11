@@ -796,7 +796,8 @@ function updateBadge(index) {
   var isScheduled = d2 && d2.scheduledAt;
   var labels = { feed: isScheduled ? 'מתוזמן לפיד' : 'העלאה לפיד', story: isScheduled ? 'מתוזמן לסטורי' : 'העלאה לסטורי', premium:'פרימיום', delete:'נמחק' };
   badge.textContent = labels[d.action] || '';
-  badge.className = 'clip-action-badge visible '+(d.action === 'feed' ? 'feed' : d.action === 'story' ? 'story' : d.action === 'schedule' ? 'schedule' : d.action === 'premium' ? 'premium' : 'delete');
+  var badgeClass = isScheduled ? 'schedule' : (d.action === 'feed' ? 'feed' : d.action === 'story' ? 'story' : d.action === 'premium' ? 'premium' : 'delete');
+  badge.className = 'clip-action-badge visible ' + badgeClass;
 }
 
 function updateButtonHighlights(index) {
