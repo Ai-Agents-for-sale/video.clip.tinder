@@ -773,7 +773,7 @@ function confirmSchedule() {
   var scheduledAt = date+'T'+time+':00.000+03:00';
   var desc = schedType === 'feed' ? document.getElementById('schedDescTextarea').value.trim() : '';
   decisions[scheduleTargetIndex] = Object.assign(decisions[scheduleTargetIndex] || {}, {
-    action: 'schedule', scheduledAt: scheduledAt, description: desc, schedType: schedType
+    action: schedType, scheduledAt: scheduledAt, description: desc, schedType: schedType
   });
   document.getElementById('schedBackdrop').classList.remove('open');
   document.getElementById('schedPanel').classList.remove('open');
@@ -792,7 +792,9 @@ function updateBadge(index) {
   var badge = document.getElementById('clipActionBadge');
   var d = decisions[index];
   if (!d) { badge.className = 'clip-action-badge'; badge.textContent = ''; return; }
-  var labels = { feed:'העלאה לפיד', story:'העלאה לסטורי', schedule:'מתוזמן', premium:'פרימיום', delete:'נמחק' };
+  var d2 = decisions[index];
+  var isScheduled = d2 && d2.scheduledAt;
+  var labels = { feed: isScheduled ? 'מתוזמן לפיד' : 'העלאה לפיד', story: isScheduled ? 'מתוזמן לסטורי' : 'העלאה לסטורי', premium:'פרימיום', delete:'נמחק' };
   badge.textContent = labels[d.action] || '';
   badge.className = 'clip-action-badge visible '+(d.action === 'feed' ? 'feed' : d.action === 'story' ? 'story' : d.action === 'schedule' ? 'schedule' : d.action === 'premium' ? 'premium' : 'delete');
 }
@@ -800,7 +802,7 @@ function updateBadge(index) {
 function updateButtonHighlights(index) {
   var d = decisions[index];
   var sel = d ? d.action : null;
-  ['feed','story','schedule','premium','delete'].forEach(function(a) {
+  ['feed','story','premium','delete'].forEach(function(a) {
     var btn = document.getElementById('btn-'+a);
     if (btn) btn.classList.toggle('selected', a === sel);
   });
