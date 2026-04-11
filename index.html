@@ -802,9 +802,17 @@ function updateBadge(index) {
 function updateButtonHighlights(index) {
   var d = decisions[index];
   var sel = d ? d.action : null;
-  ['feed','story','premium','delete'].forEach(function(a) {
+  var isScheduled = d && d.scheduledAt;
+  ['feed','story','schedule','premium','delete'].forEach(function(a) {
     var btn = document.getElementById('btn-'+a);
-    if (btn) btn.classList.toggle('selected', a === sel);
+    if (!btn) return;
+    if (a === 'schedule') {
+      btn.classList.toggle('selected', !!isScheduled);
+    } else if (a === 'feed' || a === 'story') {
+      btn.classList.toggle('selected', sel === a && !isScheduled);
+    } else {
+      btn.classList.toggle('selected', a === sel);
+    }
   });
   // show/hide desc indicator on feed button
   var indicator = document.getElementById('feed-desc-indicator');
