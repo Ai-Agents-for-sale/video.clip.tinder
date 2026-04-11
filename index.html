@@ -434,7 +434,7 @@
         <span class="action-btn-sub">לפיד / סטורי</span>
       </button>
       <button class="action-btn btn-premium" id="btn-premium" onclick="selectAction('premium')">
-        <span class="action-btn-label">⭐ שלח לפרימיום</span>
+        <span class="action-btn-label">⭐ שלח לעריכת פרימיום</span>
         <span class="action-btn-sub">עריכה מתקדמת</span>
       </button>
       <!-- Row 3 -->
@@ -461,7 +461,8 @@
   <div class="panel-grab"></div>
   <div class="panel-heading">✍️ כתוב תיאור לפוסט</div>
   <div class="panel-label">תיאור</div>
-  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..."></textarea>
+  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateHashtags(this)"></textarea>
+  <div class="hashtag-warning" id="descHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
   <button class="panel-confirm-btn" onclick="confirmDesc()">שמור תיאור ✓</button>
   <button class="panel-cancel-btn" onclick="cancelDesc()">ביטול</button>
 </div>
@@ -486,7 +487,8 @@
   <!-- Description (only for feed) -->
   <div class="desc-section" id="schedDescSection">
     <div class="panel-label">תיאור לפוסט</div>
-    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..."></textarea>
+    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateHashtags(this)"></textarea>
+  <div class="hashtag-warning" id="schedHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
   </div>
 
   <button class="panel-confirm-btn" onclick="confirmSchedule()">אשר תזמון ✓</button>
@@ -842,6 +844,27 @@ function saveAll() {
 function showState(name) {
   ['success','empty','error'].forEach(function(s) { document.getElementById('state-'+s).classList.remove('visible'); });
   document.getElementById('state-'+name).classList.add('visible');
+}
+
+function validateHashtags(textarea) {
+  var text = textarea.value;
+  var count = (text.match(/#\S+/g) || []).length;
+  var warnId = textarea.id === 'descTextarea' ? 'descHashtagWarn' : 'schedHashtagWarn';
+  var warn = document.getElementById(warnId);
+  if (count > 5) {
+    // Remove last hashtag that was typed
+    var lastHash = text.lastIndexOf('#');
+    if (lastHash !== -1) {
+      // find end of last hashtag
+      var end = text.indexOf(' ', lastHash);
+      if (end === -1) end = text.length;
+      textarea.value = text.substring(0, lastHash).trimEnd();
+    }
+    if (warn) warn.style.display = 'block';
+    setTimeout(function() { if (warn) warn.style.display = 'none'; }, 3000);
+  } else {
+    if (warn) warn.style.display = 'none';
+  }
 }
 
 init();
