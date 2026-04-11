@@ -12,7 +12,6 @@
     --surface:    #ffffff;
     --surface2:   #e8edf8;
     --border:     #c8d4e8;
-    --border2:    rgba(26,58,143,0.15);
     --text:       #0D1B4B;
     --text-dim:   #4a6080;
     --text-dimmer:#8a9ab8;
@@ -25,9 +24,12 @@
     --red-soft:   rgba(192,57,43,0.10);
     --gold:       #b07d10;
     --gold-soft:  rgba(176,125,16,0.10);
+    --purple:     #6d28d9;
+    --purple-soft:rgba(109,40,217,0.10);
+    --teal:       #0e7490;
+    --teal-soft:  rgba(14,116,144,0.10);
     --radius:     16px;
     --radius-sm:  10px;
-    --shadow:     0 4px 24px rgba(26,58,143,0.10);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -37,25 +39,16 @@
     background: linear-gradient(160deg, #f0f6ff 0%, #e8f0fe 60%, #dbeafe 100%);
     color: var(--text);
     overflow: hidden;
-    height: 100dvh;
-    width: 100vw;
+    height: 100dvh; width: 100vw;
     overscroll-behavior: none;
   }
 
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    width: 100vw;
-    overflow: hidden;
-  }
+  #app { display:flex; flex-direction:column; height:100dvh; width:100vw; overflow:hidden; }
 
   /* TOP BAR */
   .topbar {
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 12px 16px 10px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
@@ -63,333 +56,322 @@
   }
   .topbar-title { font-size: 15px; font-weight: 800; color: var(--text); }
   .topbar-sub   { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
-  .clip-counter {
+
+  .clip-counter-btn {
     background: var(--accent-soft);
     border: 1px solid var(--accent-glow);
     border-radius: 20px;
     padding: 5px 13px;
     font-size: 13px; font-weight: 700;
     color: var(--accent);
+    cursor: pointer;
+    position: relative;
+    -webkit-user-select: none; user-select: none;
   }
+
+  /* CLIP NAV DROPDOWN */
+  .clip-nav-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 220px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 24px rgba(26,58,143,0.15);
+    z-index: 200;
+    display: none;
+  }
+  .clip-nav-dropdown.open { display: block; }
+  .clip-nav-item {
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    transition: background 0.12s;
+  }
+  .clip-nav-item:last-child { border-bottom: none; }
+  .clip-nav-item:active { background: var(--accent-soft); }
+  .clip-nav-item.current { color: var(--accent); font-weight: 700; }
+  .clip-nav-num { font-size: 11px; color: var(--text-dimmer); flex-shrink: 0; }
+  .clip-nav-action { font-size: 10px; margin-right: auto; flex-shrink: 0; }
 
   /* CLIP VIEWER */
-  .clip-viewer {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    background: #000;
-  }
+  .clip-viewer { flex:1; position:relative; overflow:hidden; background:#000; }
 
   .nav-arrow {
-    position: absolute;
-    top: 50%; transform: translateY(-50%);
-    z-index: 20;
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px);
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 20; width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.3);
     color: #fff; font-size: 18px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s, opacity 0.2s;
+    cursor: pointer; transition: background 0.2s, opacity 0.2s;
     -webkit-user-select: none; user-select: none;
   }
   .nav-arrow:active { background: rgba(255,255,255,0.3); }
-  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+  .nav-arrow.hidden { opacity:0; pointer-events:none; }
   .nav-arrow.right { right: 10px; }
   .nav-arrow.left  { left: 10px; }
 
   .video-wrap {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
   }
 
   video.clip-video {
-    max-width: 100%; max-height: 100%;
-    width: auto; height: auto;
-    object-fit: contain;
-    display: none;
-    background: #000;
+    max-width:100%; max-height:100%; width:auto; height:auto;
+    object-fit:contain; display:none; background:#000;
   }
 
   .video-loading {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px;
-    background: #0a0d14; z-index: 5;
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; background:#0a0d14; z-index:5;
   }
-  .video-loading.hidden { display: none; }
+  .video-loading.hidden { display:none; }
 
   .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid rgba(26,58,143,0.15);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.75s linear infinite;
+    width:36px; height:36px;
+    border:3px solid rgba(26,58,143,0.15); border-top-color:var(--accent);
+    border-radius:50%; animation:spin 0.75s linear infinite;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 12px; color: #8892aa; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-size:12px; color:#8892aa; }
 
   .video-error {
-    position: absolute; inset: 0;
-    display: none; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 10px;
-    background: #0a0d14; z-index: 5;
-    padding: 20px; text-align: center;
+    position:absolute; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:10px;
+    background:#0a0d14; z-index:5; padding:20px; text-align:center;
   }
-  .video-error.visible { display: flex; }
-  .video-error-icon { font-size: 36px; }
-  .video-error-text { font-size: 13px; color: #8892aa; line-height: 1.5; }
-  .video-error-link { font-size: 12px; color: #4f7cff; text-decoration: underline; cursor: pointer; }
+  .video-error.visible { display:flex; }
+  .video-error-icon { font-size:36px; }
+  .video-error-text { font-size:13px; color:#8892aa; line-height:1.5; }
+  .video-error-link { font-size:12px; color:#4f7cff; text-decoration:underline; cursor:pointer; }
 
   .clip-name-overlay {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    z-index: 10;
-    padding: 40px 14px 10px;
-    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
-    display: flex; align-items: flex-end; justify-content: space-between; gap: 8px;
+    position:absolute; bottom:0; left:0; right:0; z-index:10;
+    padding:40px 14px 10px;
+    background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+    display:flex; align-items:flex-end; justify-content:space-between; gap:8px;
   }
   .clip-name-text {
-    font-size: 13px; font-weight: 600;
-    color: rgba(255,255,255,0.9);
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    line-height: 1.4; flex: 1;
+    font-size:13px; font-weight:600; color:rgba(255,255,255,0.9);
+    text-shadow:0 1px 4px rgba(0,0,0,0.8); line-height:1.4; flex:1;
   }
-
   .clip-action-badge {
-    display: none;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    display:none; padding:4px 10px; border-radius:20px;
+    font-size:11px; font-weight:700; flex-shrink:0;
   }
-  .clip-action-badge.visible  { display: block; }
-  .clip-action-badge.upload   { background: var(--green); color: #fff; }
-  .clip-action-badge.premium  { background: var(--gold);  color: #fff; }
-  .clip-action-badge.schedule { background: var(--accent); color: #fff; }
-  .clip-action-badge.delete   { background: var(--red);   color: #fff; }
+  .clip-action-badge.visible   { display:block; }
+  .clip-action-badge.feed      { background:var(--green); color:#fff; }
+  .clip-action-badge.story     { background:var(--purple); color:#fff; }
+  .clip-action-badge.premium   { background:var(--gold); color:#fff; }
+  .clip-action-badge.schedule  { background:var(--accent); color:#fff; }
+  .clip-action-badge.delete    { background:var(--red); color:#fff; }
+  .clip-action-badge.download  { background:var(--teal); color:#fff; }
 
   .dots-row {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 5px; z-index: 15;
-    max-width: calc(100% - 24px);
-    flex-wrap: nowrap; overflow: hidden;
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    display:flex; gap:5px; z-index:15;
+    max-width:calc(100% - 24px); flex-wrap:nowrap; overflow:hidden;
   }
   .dot-seg {
-    height: 3px; border-radius: 2px;
-    background: rgba(255,255,255,0.25);
-    transition: background 0.2s;
-    flex: 1; min-width: 6px; max-width: 40px;
+    height:3px; border-radius:2px; background:rgba(255,255,255,0.25);
+    transition:background 0.2s; flex:1; min-width:6px; max-width:40px;
   }
-  .dot-seg.done    { background: rgba(255,255,255,0.85); }
-  .dot-seg.current { background: #4f7cff; }
+  .dot-seg.done    { background:rgba(255,255,255,0.85); }
+  .dot-seg.current { background:#4f7cff; }
 
-  .clip-slide-wrapper {
-    position: absolute; inset: 0;
-    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
-  }
-  .clip-slide-wrapper.slide-out-left  { transform: translateX(-100%); opacity: 0; }
-  .clip-slide-wrapper.slide-out-right { transform: translateX(100%);  opacity: 0; }
-  .clip-slide-wrapper.slide-in-left   { animation: slideInLeft  0.3s cubic-bezier(0.4,0,0.2,1) both; }
-  .clip-slide-wrapper.slide-in-right  { animation: slideInRight 0.3s cubic-bezier(0.4,0,0.2,1) both; }
-  @keyframes slideInLeft  { from { transform: translateX(-80%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-  @keyframes slideInRight { from { transform: translateX(80%);  opacity:0; } to { transform: translateX(0); opacity:1; } }
+  .clip-slide-wrapper { position:absolute; inset:0; transition:transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; }
+  .clip-slide-wrapper.slide-out-left  { transform:translateX(-100%); opacity:0; }
+  .clip-slide-wrapper.slide-out-right { transform:translateX(100%);  opacity:0; }
+  .clip-slide-wrapper.slide-in-left   { animation:slideInLeft  0.3s cubic-bezier(0.4,0,0.2,1) both; }
+  .clip-slide-wrapper.slide-in-right  { animation:slideInRight 0.3s cubic-bezier(0.4,0,0.2,1) both; }
+  @keyframes slideInLeft  { from{transform:translateX(-80%);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes slideInRight { from{transform:translateX(80%); opacity:0;} to{transform:translateX(0);opacity:1;} }
 
   /* BOTTOM ACTIONS */
   .bottom-area {
-    flex-shrink: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 12px rgba(26,58,124,0.08);
+    flex-shrink:0; background:var(--surface);
+    border-top:1px solid var(--border);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    box-shadow:0 -2px 12px rgba(26,58,124,0.08);
   }
 
   .action-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px; margin-bottom: 10px;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:7px; margin-bottom:8px;
   }
 
   .action-btn {
-    border-radius: var(--radius-sm);
-    padding: 11px 8px;
-    font-family: 'Heebo', sans-serif;
-    font-size: 11.5px; font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-    border: 1.5px solid transparent;
-    position: relative;
+    border-radius:var(--radius-sm); padding:9px 6px;
+    font-family:'Heebo',sans-serif; font-size:11px; font-weight:700;
+    cursor:pointer; transition:opacity 0.15s, transform 0.12s, box-shadow 0.15s;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    border:1.5px solid transparent; position:relative; text-align:center;
   }
-  .action-btn:active { transform: scale(0.97); opacity: 0.85; }
+  .action-btn:active { transform:scale(0.97); opacity:0.85; }
 
   .action-btn.selected::after {
-    content: '✓';
-    position: absolute; top: -6px; left: -6px;
-    width: 18px; height: 18px; border-radius: 50%;
-    font-size: 10px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    background: #fff;
+    content:'✓'; position:absolute; top:-6px; left:-6px;
+    width:18px; height:18px; border-radius:50%;
+    font-size:10px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff;
   }
 
-  .btn-upload   { background: var(--green-soft); color: var(--green); border-color: rgba(26,122,74,0.25); }
-  .btn-premium  { background: var(--gold-soft);  color: var(--gold);  border-color: rgba(176,125,16,0.25); }
-  .btn-schedule { background: var(--accent-soft);color: var(--accent);border-color: rgba(26,58,143,0.2); }
-  .btn-delete   { background: var(--red-soft);   color: var(--red);   border-color: rgba(192,57,43,0.2); }
+  .action-btn-label { font-size:11px; font-weight:700; }
+  .action-btn-sub   { font-size:9px; font-weight:500; opacity:0.8; }
+  .action-btn-desc  { font-size:9px; font-weight:600; color:var(--green); display:none; }
+  .action-btn-desc.visible { display:block; }
 
-  .btn-upload.selected   { background: var(--green); color:#fff; border-color:var(--green); box-shadow:0 4px 14px rgba(26,122,74,0.3); }
-  .btn-premium.selected  { background: var(--gold);  color:#fff; border-color:var(--gold);  box-shadow:0 4px 14px rgba(176,125,16,0.3); }
-  .btn-schedule.selected { background: var(--accent);color:#fff; border-color:var(--accent);box-shadow:0 4px 14px rgba(26,58,143,0.3); }
-  .btn-delete.selected   { background: var(--red);   color:#fff; border-color:var(--red);   box-shadow:0 4px 14px rgba(192,57,43,0.3); }
+  .btn-feed     { background:var(--green-soft);  color:var(--green);  border-color:rgba(26,122,74,0.25); }
+  .btn-story    { background:var(--purple-soft); color:var(--purple); border-color:rgba(109,40,217,0.2); }
+  .btn-schedule { background:var(--accent-soft); color:var(--accent); border-color:rgba(26,58,143,0.2); }
+  .btn-premium  { background:var(--gold-soft);   color:var(--gold);   border-color:rgba(176,125,16,0.25); }
+  .btn-delete   { background:var(--red-soft);    color:var(--red);    border-color:rgba(192,57,43,0.2); }
+  .btn-download { background:var(--teal-soft);   color:var(--teal);   border-color:rgba(14,116,144,0.2); }
 
-  .btn-upload.selected::after   { color: var(--green); }
-  .btn-premium.selected::after  { color: var(--gold); }
-  .btn-schedule.selected::after { color: var(--accent); }
-  .btn-delete.selected::after   { color: var(--red); }
+  .btn-feed.selected     { background:var(--green);  color:#fff; border-color:var(--green);  box-shadow:0 4px 14px rgba(26,122,74,0.3); }
+  .btn-story.selected    { background:var(--purple); color:#fff; border-color:var(--purple); box-shadow:0 4px 14px rgba(109,40,217,0.3); }
+  .btn-schedule.selected { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 4px 14px rgba(26,58,143,0.3); }
+  .btn-premium.selected  { background:var(--gold);   color:#fff; border-color:var(--gold);   box-shadow:0 4px 14px rgba(176,125,16,0.3); }
+  .btn-delete.selected   { background:var(--red);    color:#fff; border-color:var(--red);    box-shadow:0 4px 14px rgba(192,57,43,0.3); }
+  .btn-download.selected { background:var(--teal);   color:#fff; border-color:var(--teal);   box-shadow:0 4px 14px rgba(14,116,144,0.3); }
+
+  .btn-feed.selected::after     { color:var(--green); }
+  .btn-story.selected::after    { color:var(--purple); }
+  .btn-schedule.selected::after { color:var(--accent); }
+  .btn-premium.selected::after  { color:var(--gold); }
+  .btn-delete.selected::after   { color:var(--red); }
+  .btn-download.selected::after { color:var(--teal); }
 
   .save-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #1a3a8f, #2d5fc4);
-    color: #fff; border: none;
-    border-radius: var(--radius-sm);
-    padding: 13px;
-    font-family: 'Heebo', sans-serif;
-    font-size: 15px; font-weight: 800;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    box-shadow: 0 4px 15px rgba(26,58,143,0.2);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width:100%; background:linear-gradient(135deg,#1a3a8f,#2d5fc4);
+    color:#fff; border:none; border-radius:var(--radius-sm); padding:12px;
+    font-family:'Heebo',sans-serif; font-size:15px; font-weight:800;
+    cursor:pointer; transition:opacity 0.2s, transform 0.15s;
+    box-shadow:0 4px 15px rgba(26,58,143,0.2);
+    display:flex; align-items:center; justify-content:center; gap:8px;
   }
-  .save-btn:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
-  .save-btn:not(:disabled):active { transform: scale(0.98); opacity: 0.88; }
-
+  .save-btn:disabled { opacity:0.3; cursor:default; box-shadow:none; }
+  .save-btn:not(:disabled):active { transform:scale(0.98); opacity:0.88; }
   .save-progress {
-    font-size: 11px; font-weight: 600;
-    background: rgba(255,255,255,0.2);
-    color: #fff; border-radius: 20px;
-    padding: 2px 8px;
+    font-size:11px; font-weight:600; background:rgba(255,255,255,0.2);
+    color:#fff; border-radius:20px; padding:2px 8px;
   }
 
-  /* SCHEDULE MODAL */
-  .sched-backdrop {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(13,27,75,0.4);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
+  /* PANELS (schedule + description) */
+  .panel-backdrop {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(13,27,75,0.4); backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px); z-index:100;
+    opacity:0; pointer-events:none; transition:opacity 0.25s ease;
   }
-  .sched-backdrop.open { opacity: 1; pointer-events: auto; }
+  .panel-backdrop.open { opacity:1; pointer-events:auto; }
 
-  .sched-panel {
-    position: fixed;
-    bottom: 0; left: 0;
-    width: 100%;
-    z-index: 101;
-    background: #fff;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -8px 30px rgba(13,27,75,0.15);
-    padding: 0 20px calc(28px + env(safe-area-inset-bottom));
-    box-sizing: border-box;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
-    direction: rtl;
+  .panel-sheet {
+    position:fixed; bottom:0; left:0; width:100%; z-index:101;
+    background:#fff; border-radius:20px 20px 0 0;
+    box-shadow:0 -8px 30px rgba(13,27,75,0.15);
+    padding:0 20px calc(28px + env(safe-area-inset-bottom));
+    box-sizing:border-box; transform:translateY(100%);
+    transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    direction:rtl; max-height:90dvh; overflow-y:auto;
   }
-  .sched-panel.open { transform: translateY(0); }
+  .panel-sheet.open { transform:translateY(0); }
 
-  .sched-grab {
-    width: 40px; height: 4px;
-    background: #d0d5e0;
-    border-radius: 2px;
-    margin: 14px auto 18px;
+  .panel-grab {
+    width:40px; height:4px; background:#d0d5e0;
+    border-radius:2px; margin:14px auto 18px;
+  }
+  .panel-heading {
+    font-size:17px; font-weight:800; color:var(--text);
+    text-align:center; margin-bottom:18px;
+  }
+  .panel-label {
+    font-size:11px; font-weight:700; color:var(--text-dim);
+    text-transform:uppercase; letter-spacing:0.06em;
+    margin-bottom:8px; text-align:right;
   }
 
-  .sched-heading {
-    font-size: 17px; font-weight: 800;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 22px;
+  /* Schedule type toggle */
+  .sched-type-row {
+    display:flex; gap:8px; margin-bottom:18px;
+  }
+  .sched-type-btn {
+    flex:1; padding:10px 8px; border-radius:var(--radius-sm);
+    font-family:'Heebo',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; border:1.5px solid var(--border);
+    background:var(--surface2); color:var(--text-dim);
+    transition:all 0.15s; text-align:center;
+  }
+  .sched-type-btn.active {
+    background:var(--accent); color:#fff; border-color:var(--accent);
+    box-shadow:0 4px 12px rgba(26,58,143,0.25);
   }
 
-  .sched-label {
-    font-size: 11px; font-weight: 700;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-    text-align: right;
-  }
-
+  /* Date/time inputs */
   .sched-input {
-    display: block;
-    width: 100%;
-    height: 50px;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface2);
-    font-size: 17px; font-weight: 600;
-    font-family: 'Heebo', sans-serif;
-    color: var(--text);
-    text-align: center;
-    direction: ltr;
-    outline: none;
-    padding: 0 16px;
-    margin: 0 0 18px;
-    box-sizing: border-box;
-    -webkit-appearance: none;
-    appearance: none;
-    transition: border-color 0.2s;
+    display:block; width:100%; height:50px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:var(--surface2); font-size:17px; font-weight:600;
+    font-family:'Heebo',sans-serif; color:var(--text); text-align:center;
+    direction:ltr; outline:none; padding:0 16px; margin:0 0 16px;
+    box-sizing:border-box; -webkit-appearance:none; appearance:none;
+    transition:border-color 0.2s;
   }
-  .sched-input:focus { border-color: var(--accent); }
+  .sched-input:focus { border-color:var(--accent); }
 
-  .sched-confirm {
-    display: block;
-    width: 100%;
-    height: 52px;
-    background: linear-gradient(135deg, #1a3a8f, #2d5fc4);
-    color: #fff; border: none;
-    border-radius: 12px;
-    font-family: 'Heebo', sans-serif;
-    font-size: 16px; font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(26,58,143,0.25);
-    margin-bottom: 10px;
-    box-sizing: border-box;
-    transition: opacity 0.15s;
+  /* Description textarea */
+  .desc-textarea {
+    display:block; width:100%; min-height:100px;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:var(--surface2); font-size:15px; font-weight:500;
+    font-family:'Heebo',sans-serif; color:var(--text);
+    direction:rtl; outline:none; padding:12px 14px; margin:0 0 16px;
+    box-sizing:border-box; resize:none;
+    transition:border-color 0.2s; line-height:1.6;
   }
-  .sched-confirm:active { opacity: 0.85; }
+  .desc-textarea:focus { border-color:var(--accent); }
+  .desc-textarea::placeholder { color:var(--text-dimmer); }
 
-  .sched-cancel {
-    display: block;
-    width: 100%;
-    background: none; border: none;
-    color: var(--text-dim);
-    font-family: 'Heebo', sans-serif;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer;
-    padding: 10px 0;
-    text-align: center;
+  .panel-confirm-btn {
+    display:block; width:100%; height:52px;
+    background:linear-gradient(135deg,#1a3a8f,#2d5fc4);
+    color:#fff; border:none; border-radius:12px;
+    font-family:'Heebo',sans-serif; font-size:16px; font-weight:800;
+    cursor:pointer; box-shadow:0 4px 16px rgba(26,58,143,0.25);
+    margin-bottom:10px; box-sizing:border-box; transition:opacity 0.15s;
   }
+  .panel-confirm-btn:active { opacity:0.85; }
+  .panel-cancel-btn {
+    display:block; width:100%; background:none; border:none;
+    color:var(--text-dim); font-family:'Heebo',sans-serif;
+    font-size:13px; font-weight:600; cursor:pointer; padding:10px 0; text-align:center;
+  }
+
+  /* desc section in schedule panel */
+  .desc-section { margin-top:4px; }
+  .desc-section.hidden { display:none; }
 
   /* FULL STATES */
   .fullstate {
-    display: none;
-    position: fixed; inset: 0;
-    flex-direction: column; align-items: center; justify-content: center;
-    gap: 16px;
-    background: linear-gradient(160deg, #f0f6ff 0%, #e8f0fe 60%, #dbeafe 100%);
-    text-align: center; padding: 32px; z-index: 200;
+    display:none; position:fixed; inset:0;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; background:linear-gradient(160deg,#f0f6ff 0%,#e8f0fe 60%,#dbeafe 100%);
+    text-align:center; padding:32px; z-index:200;
   }
-  .fullstate.visible { display: flex; }
-  .state-icon  { font-size: 54px; line-height: 1; }
-  .state-title { font-size: 20px; font-weight: 900; color: var(--text); }
-  .state-sub   { font-size: 14px; color: var(--text-dim); line-height: 1.6; max-width: 280px; }
+  .fullstate.visible { display:flex; }
+  .state-icon  { font-size:54px; line-height:1; }
+  .state-title { font-size:20px; font-weight:900; color:var(--text); }
+  .state-sub   { font-size:14px; color:var(--text-dim); line-height:1.6; max-width:280px; }
 </style>
 </head>
 <body>
@@ -402,37 +384,33 @@
       <div class="topbar-title">🎬 סקירת קליפים</div>
       <div class="topbar-sub">בחר פעולה לכל קליפ ולחץ שמור בסוף התהליך</div>
     </div>
-    <div class="clip-counter" id="clipCounter">— / —</div>
+    <div style="position:relative;">
+      <div class="clip-counter-btn" id="clipCounterBtn" onclick="toggleNavDropdown()">— / —</div>
+      <div class="clip-nav-dropdown" id="clipNavDropdown"></div>
+    </div>
   </div>
 
   <!-- CLIP VIEWER -->
   <div class="clip-viewer" id="clipViewer">
     <div class="dots-row" id="dotsRow"></div>
-
     <button class="nav-arrow right hidden" id="arrowRight" onclick="navigate(1)">›</button>
     <button class="nav-arrow left  hidden" id="arrowLeft"  onclick="navigate(-1)">‹</button>
-
     <div class="clip-slide-wrapper" id="slideWrapper">
       <div class="video-wrap" id="videoWrap">
-
         <div class="video-loading" id="videoLoading">
           <div class="spinner"></div>
           <div class="loading-text" id="loadingText">טוען קליפים...</div>
         </div>
-
         <div class="video-error" id="videoError">
           <div class="video-error-icon">⚠️</div>
           <div class="video-error-text">לא ניתן לטעון את הקליפ<br>לחץ לפתיחה בדרופבוקס</div>
           <div class="video-error-link" onclick="openDriveLink()">פתח בדרופבוקס ↗</div>
         </div>
-
         <video id="clipVideo" class="clip-video" playsinline controls></video>
-
         <div class="clip-name-overlay">
           <div class="clip-name-text" id="clipNameText"></div>
           <div class="clip-action-badge" id="clipActionBadge"></div>
         </div>
-
       </div>
     </div>
   </div>
@@ -440,10 +418,34 @@
   <!-- BOTTOM ACTIONS -->
   <div class="bottom-area">
     <div class="action-grid">
-      <button class="action-btn btn-upload"   id="btn-upload"   onclick="selectAction('upload')">⬆️ העלה עכשיו</button>
-      <button class="action-btn btn-premium"  id="btn-premium"  onclick="selectAction('premium')">⭐ שלח לעריכת פרימיום</button>
-      <button class="action-btn btn-schedule" id="btn-schedule" onclick="selectAction('schedule')">📅 תזמן העלאה</button>
-      <button class="action-btn btn-delete"   id="btn-delete"   onclick="selectAction('delete')">🗑️ מחק קליפ מהתיקייה</button>
+      <!-- Row 1 -->
+      <button class="action-btn btn-feed" id="btn-feed" onclick="selectAction('feed')">
+        <span class="action-btn-label">⬆️ העלה לפיד</span>
+        <span class="action-btn-sub">העלאה מיידית</span>
+        <span class="action-btn-desc" id="feed-desc-indicator">✓ תיאור נכתב</span>
+      </button>
+      <button class="action-btn btn-story" id="btn-story" onclick="selectAction('story')">
+        <span class="action-btn-label">📱 העלה לסטורי</span>
+        <span class="action-btn-sub">העלאה מיידית</span>
+      </button>
+      <!-- Row 2 -->
+      <button class="action-btn btn-schedule" id="btn-schedule" onclick="selectAction('schedule')">
+        <span class="action-btn-label">📅 תזמן העלאה</span>
+        <span class="action-btn-sub">לפיד / סטורי</span>
+      </button>
+      <button class="action-btn btn-premium" id="btn-premium" onclick="selectAction('premium')">
+        <span class="action-btn-label">⭐ שלח לפרימיום</span>
+        <span class="action-btn-sub">עריכה מתקדמת</span>
+      </button>
+      <!-- Row 3 -->
+      <button class="action-btn btn-download" id="btn-download" onclick="downloadClip()">
+        <span class="action-btn-label">⬇️ הורד למכשיר</span>
+        <span class="action-btn-sub">הורדה ישירה</span>
+      </button>
+      <button class="action-btn btn-delete" id="btn-delete" onclick="selectAction('delete')">
+        <span class="action-btn-label">🗑️ מחק קליפ</span>
+        <span class="action-btn-sub">מחיקה מהתיקייה</span>
+      </button>
     </div>
     <button class="save-btn" id="saveBtn" onclick="saveAll()" disabled>
       💾 שמור ושלח שינויים
@@ -453,17 +455,42 @@
 
 </div>
 
-<!-- SCHEDULE MODAL -->
-<div class="sched-backdrop" id="schedBackdrop" onclick="cancelSchedule()"></div>
-<div class="sched-panel" id="schedPanel">
-  <div class="sched-grab"></div>
-  <div class="sched-heading">📅 בחר תאריך ושעה לפרסום</div>
-  <div class="sched-label">תאריך פרסום</div>
+<!-- DESCRIPTION PANEL (feed upload) -->
+<div class="panel-backdrop" id="descBackdrop" onclick="cancelDesc()"></div>
+<div class="panel-sheet" id="descPanel">
+  <div class="panel-grab"></div>
+  <div class="panel-heading">✍️ כתוב תיאור לפוסט</div>
+  <div class="panel-label">תיאור</div>
+  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..."></textarea>
+  <button class="panel-confirm-btn" onclick="confirmDesc()">שמור תיאור ✓</button>
+  <button class="panel-cancel-btn" onclick="cancelDesc()">ביטול</button>
+</div>
+
+<!-- SCHEDULE PANEL -->
+<div class="panel-backdrop" id="schedBackdrop" onclick="cancelSchedule()"></div>
+<div class="panel-sheet" id="schedPanel">
+  <div class="panel-grab"></div>
+  <div class="panel-heading">📅 תזמן העלאה</div>
+
+  <!-- Type toggle -->
+  <div class="sched-type-row">
+    <button class="sched-type-btn active" id="schedTypeFeed" onclick="setSchedType('feed')">📺 תזמן לפיד</button>
+    <button class="sched-type-btn" id="schedTypeStory" onclick="setSchedType('story')">📱 תזמן לסטורי</button>
+  </div>
+
+  <div class="panel-label">תאריך פרסום</div>
   <input type="date" class="sched-input" id="schedDate" />
-  <div class="sched-label">שעת פרסום</div>
+  <div class="panel-label">שעת פרסום</div>
   <input type="time" class="sched-input" id="schedTime" />
-  <button class="sched-confirm" onclick="confirmSchedule()">אשר תזמון ✓</button>
-  <button class="sched-cancel" onclick="cancelSchedule()">ביטול</button>
+
+  <!-- Description (only for feed) -->
+  <div class="desc-section" id="schedDescSection">
+    <div class="panel-label">תיאור לפוסט</div>
+    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..."></textarea>
+  </div>
+
+  <button class="panel-confirm-btn" onclick="confirmSchedule()">אשר תזמון ✓</button>
+  <button class="panel-cancel-btn" onclick="cancelSchedule()">ביטול</button>
 </div>
 
 <!-- STATES -->
@@ -472,13 +499,11 @@
   <div class="state-title">הבחירות נשלחו!</div>
   <div class="state-sub">הסוכן קיבל את כל ההוראות לכל הקליפים ויטפל בהם בהתאם 🚀<br><br>ניתן לסגור את החלונית ולחזור לצ׳אט</div>
 </div>
-
 <div class="fullstate" id="state-empty">
   <div class="state-icon">📂</div>
   <div class="state-title">אין קליפים</div>
   <div class="state-sub">לא נמצאו קליפים לסקירה בתיקייה</div>
 </div>
-
 <div class="fullstate" id="state-error">
   <div class="state-icon">❌</div>
   <div class="state-title">שגיאה בטעינה</div>
@@ -486,7 +511,6 @@
 </div>
 
 <script>
-// TELEGRAM
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); tg.enableClosingConfirmation(); }
 
@@ -507,11 +531,14 @@ var folderPath = params.get('folderPath') || '';
 // STATE
 var clips           = [];
 var currentIndex    = 0;
-var decisions       = {};
+var decisions       = {}; // { index: { action, scheduledAt, description, schedType } }
 var currentViewLink = '';
+var currentDownloadUrl = '';
 var scheduleTargetIndex = null;
+var descTargetIndex     = null;
+var schedType = 'feed'; // 'feed' or 'story'
 
-// Init date/time with +30min default
+// Init date/time
 (function() {
   var now = new Date();
   now.setMinutes(now.getMinutes() + 30);
@@ -520,8 +547,8 @@ var scheduleTargetIndex = null;
   var dd   = String(now.getDate()).padStart(2,'0');
   var hh   = String(now.getHours()).padStart(2,'0');
   var min  = String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('schedDate').value = yyyy + '-' + mm + '-' + dd;
-  document.getElementById('schedTime').value = hh + ':' + min;
+  document.getElementById('schedDate').value = yyyy+'-'+mm+'-'+dd;
+  document.getElementById('schedTime').value = hh+':'+min;
 })();
 
 // INIT
@@ -533,55 +560,86 @@ function init() {
 function fetchClips() {
   document.getElementById('loadingText').textContent = 'טוען קליפים...';
   fetch(pollingUrl + (pollingUrl.indexOf('?') >= 0 ? '&' : '?') + 'folderPath=' + encodeURIComponent(folderPath))
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
+    .then(function(res) { if (!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
     .then(function(data) {
       if (!data || !data.clips || data.clips.length === 0) { showState('empty'); return; }
       clips = data.clips;
       buildDots();
+      buildNavDropdown();
       loadClip(0);
     })
-    .catch(function(err) {
-      console.error('fetchClips error:', err);
-      showState('error');
-    });
+    .catch(function(err) { console.error('fetchClips error:', err); showState('error'); });
 }
 
 // DOTS
 function buildDots() {
-  var row = document.getElementById('dotsRow');
   var html = '';
-  for (var i = 0; i < clips.length; i++) {
-    html += '<div class="dot-seg" id="dot-' + i + '"></div>';
-  }
-  row.innerHTML = html;
+  for (var i = 0; i < clips.length; i++) html += '<div class="dot-seg" id="dot-'+i+'"></div>';
+  document.getElementById('dotsRow').innerHTML = html;
   updateDots();
 }
 
 function updateDots() {
   for (var i = 0; i < clips.length; i++) {
-    var dot = document.getElementById('dot-' + i);
-    if (!dot) continue;
-    dot.className = 'dot-seg' + (i < currentIndex ? ' done' : i === currentIndex ? ' current' : '');
+    var dot = document.getElementById('dot-'+i);
+    if (dot) dot.className = 'dot-seg'+(i < currentIndex ? ' done' : i === currentIndex ? ' current' : '');
   }
 }
+
+// NAV DROPDOWN
+function buildNavDropdown() {
+  var html = '';
+  var actionEmoji = { feed:'⬆️', story:'📱', schedule:'📅', premium:'⭐', delete:'🗑️', download:'⬇️' };
+  for (var i = 0; i < clips.length; i++) {
+    var d = decisions[i];
+    var badge = d ? '<span class="clip-nav-action">'+( actionEmoji[d.action] || '')+'</span>' : '';
+    html += '<div class="clip-nav-item'+(i===currentIndex?' current':'')+'" onclick="navToClip('+i+')">'+
+      '<span class="clip-nav-num">'+(i+1)+'.</span>'+
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(clips[i].name||('קליפ '+(i+1)))+'</span>'+
+      badge+
+    '</div>';
+  }
+  document.getElementById('clipNavDropdown').innerHTML = html;
+}
+
+function toggleNavDropdown() {
+  var dd = document.getElementById('clipNavDropdown');
+  dd.classList.toggle('open');
+}
+
+function navToClip(index) {
+  document.getElementById('clipNavDropdown').classList.remove('open');
+  if (index === currentIndex) return;
+  haptic('select');
+  var dir = index > currentIndex ? 1 : -1;
+  var wrapper = document.getElementById('slideWrapper');
+  wrapper.className = 'clip-slide-wrapper '+(dir > 0 ? 'slide-out-left' : 'slide-out-right');
+  setTimeout(function() {
+    wrapper.className = 'clip-slide-wrapper '+(dir > 0 ? 'slide-in-right' : 'slide-in-left');
+    loadClip(index);
+  }, 200);
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  var btn = document.getElementById('clipCounterBtn');
+  var dd  = document.getElementById('clipNavDropdown');
+  if (!btn.contains(e.target) && !dd.contains(e.target)) dd.classList.remove('open');
+});
 
 // LOAD CLIP
 function loadClip(index) {
   var clip = clips[index];
   if (!clip) return;
+  currentIndex       = index;
+  currentViewLink    = clip.webViewLink  || '';
+  currentDownloadUrl = clip.downloadUrl  || clip.webViewLink?.replace('dl=0','dl=1') || '';
 
-  currentIndex    = index;
-  currentViewLink = clip.webViewLink || '';
-
-  document.getElementById('clipCounter').textContent = (index + 1) + ' / ' + clips.length;
-  document.getElementById('arrowRight').classList.toggle('hidden', index >= clips.length - 1);
+  document.getElementById('clipCounterBtn').textContent = (index+1)+' / '+clips.length;
+  document.getElementById('arrowRight').classList.toggle('hidden', index >= clips.length-1);
   document.getElementById('arrowLeft').classList.toggle('hidden',  index <= 0);
-
   updateDots();
-  document.getElementById('clipNameText').textContent = clip.name || ('קליפ ' + (index + 1));
+  document.getElementById('clipNameText').textContent = clip.name || ('קליפ '+(index+1));
   updateBadge(index);
   updateButtonHighlights(index);
   loadVideo(clip.driveUrl);
@@ -591,49 +649,32 @@ function loadVideo(driveUrl) {
   var videoEl = document.getElementById('clipVideo');
   var loading = document.getElementById('videoLoading');
   var errorEl = document.getElementById('videoError');
-
-  videoEl.pause();
-  videoEl.removeAttribute('src');
-  videoEl.style.display = 'none';
+  videoEl.pause(); videoEl.removeAttribute('src'); videoEl.style.display = 'none';
   loading.classList.remove('hidden');
   document.getElementById('loadingText').textContent = 'טוען קליפ...';
   errorEl.classList.remove('visible');
-
-  if (!driveUrl) {
-    loading.classList.add('hidden');
-    errorEl.classList.add('visible');
-    return;
-  }
-
+  if (!driveUrl) { loading.classList.add('hidden'); errorEl.classList.add('visible'); return; }
   var loadTimeout = setTimeout(function() {
-    if (!loading.classList.contains('hidden')) {
-      loading.classList.add('hidden');
-      errorEl.classList.add('visible');
-    }
+    if (!loading.classList.contains('hidden')) { loading.classList.add('hidden'); errorEl.classList.add('visible'); }
   }, 30000);
-
   videoEl.setAttribute('type', 'video/mp4');
-
-  videoEl.onloadedmetadata = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'block';
-    errorEl.classList.remove('visible');
-  };
-
-  videoEl.onerror = function() {
-    clearTimeout(loadTimeout);
-    loading.classList.add('hidden');
-    videoEl.style.display = 'none';
-    errorEl.classList.add('visible');
-  };
-
-  videoEl.src = driveUrl;
-  videoEl.load();
+  videoEl.onloadedmetadata = function() { clearTimeout(loadTimeout); loading.classList.add('hidden'); videoEl.style.display = 'block'; errorEl.classList.remove('visible'); };
+  videoEl.onerror = function() { clearTimeout(loadTimeout); loading.classList.add('hidden'); videoEl.style.display = 'none'; errorEl.classList.add('visible'); };
+  videoEl.src = driveUrl; videoEl.load();
 }
 
-function openDriveLink() {
-  if (currentViewLink) window.open(currentViewLink, '_blank');
+function openDriveLink() { if (currentViewLink) window.open(currentViewLink, '_blank'); }
+
+function downloadClip() {
+  haptic('impact');
+  if (!currentDownloadUrl) return;
+  var a = document.createElement('a');
+  a.href = currentDownloadUrl;
+  a.download = (clips[currentIndex] && clips[currentIndex].name) || 'clip.mp4';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // NAVIGATION
@@ -642,66 +683,82 @@ function navigate(dir) {
   if (next < 0 || next >= clips.length) return;
   haptic('select');
   var wrapper = document.getElementById('slideWrapper');
-  wrapper.className = 'clip-slide-wrapper ' + (dir > 0 ? 'slide-out-left' : 'slide-out-right');
+  wrapper.className = 'clip-slide-wrapper '+(dir > 0 ? 'slide-out-left' : 'slide-out-right');
   setTimeout(function() {
-    wrapper.className = 'clip-slide-wrapper ' + (dir > 0 ? 'slide-in-right' : 'slide-in-left');
+    wrapper.className = 'clip-slide-wrapper '+(dir > 0 ? 'slide-in-right' : 'slide-in-left');
     loadClip(next);
   }, 200);
 }
 
 var touchStartX = 0, touchStartY = 0;
-document.getElementById('clipViewer').addEventListener('touchstart', function(e) {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-document.getElementById('clipViewer').addEventListener('touchend', function(e) {
+document.getElementById('clipViewer').addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, { passive:true });
+document.getElementById('clipViewer').addEventListener('touchend',   function(e) {
   var dx = touchStartX - e.changedTouches[0].clientX;
   var dy = Math.abs(touchStartY - e.changedTouches[0].clientY);
   if (Math.abs(dx) > 50 && dy < 60) navigate(dx > 0 ? 1 : -1);
-}, { passive: true });
+}, { passive:true });
 
 // ACTION BUTTONS
 function selectAction(action) {
   haptic('impact');
+  if (action === 'feed') {
+    // Open description panel
+    descTargetIndex = currentIndex;
+    var existing = decisions[currentIndex];
+    document.getElementById('descTextarea').value = (existing && existing.description) ? existing.description : '';
+    document.getElementById('descBackdrop').classList.add('open');
+    document.getElementById('descPanel').classList.add('open');
+    return;
+  }
   if (action === 'schedule') {
     scheduleTargetIndex = currentIndex;
+    var ex = decisions[currentIndex];
+    schedType = (ex && ex.schedType) ? ex.schedType : 'feed';
+    setSchedType(schedType);
+    document.getElementById('schedDescTextarea').value = (ex && ex.description) ? ex.description : '';
     document.getElementById('schedBackdrop').classList.add('open');
     document.getElementById('schedPanel').classList.add('open');
     return;
   }
-  decisions[currentIndex] = { action: action, scheduledAt: '' };
+  decisions[currentIndex] = Object.assign(decisions[currentIndex] || {}, { action: action, scheduledAt: '', description: '', schedType: '' });
   updateBadge(currentIndex);
   updateButtonHighlights(currentIndex);
   updateSaveBtn();
+  buildNavDropdown();
 }
 
-function updateBadge(index) {
-  var badge = document.getElementById('clipActionBadge');
-  var d = decisions[index];
-  if (!d) { badge.className = 'clip-action-badge'; badge.textContent = ''; return; }
-  var labels = { upload: 'העלאה מיידית', premium: 'פרימיום', schedule: 'מתוזמן', delete: 'נמחק' };
-  badge.textContent = labels[d.action] || '';
-  badge.className = 'clip-action-badge visible ' + d.action;
+// DESCRIPTION PANEL
+function cancelDesc() {
+  document.getElementById('descBackdrop').classList.remove('open');
+  document.getElementById('descPanel').classList.remove('open');
+  descTargetIndex = null;
 }
 
-function updateButtonHighlights(index) {
-  var d = decisions[index];
-  var sel = d ? d.action : null;
-  ['upload','premium','schedule','delete'].forEach(function(a) {
-    var btn = document.getElementById('btn-' + a);
-    if (btn) btn.classList.toggle('selected', a === sel);
+function confirmDesc() {
+  var desc = document.getElementById('descTextarea').value.trim();
+  decisions[descTargetIndex] = Object.assign(decisions[descTargetIndex] || {}, {
+    action: 'feed', scheduledAt: '', description: desc, schedType: 'feed'
   });
+  document.getElementById('descBackdrop').classList.remove('open');
+  document.getElementById('descPanel').classList.remove('open');
+  haptic('success');
+  if (descTargetIndex === currentIndex) {
+    updateBadge(currentIndex);
+    updateButtonHighlights(currentIndex);
+  }
+  updateSaveBtn();
+  buildNavDropdown();
+  descTargetIndex = null;
 }
 
-function updateSaveBtn() {
-  var count = Object.keys(decisions).length;
-  var btn   = document.getElementById('saveBtn');
-  var prog  = document.getElementById('saveProgress');
-  btn.disabled = count === 0;
-  prog.textContent = count > 0 ? count + '/' + clips.length + ' נבחרו' : '';
+// SCHEDULE PANEL
+function setSchedType(type) {
+  schedType = type;
+  document.getElementById('schedTypeFeed').classList.toggle('active', type === 'feed');
+  document.getElementById('schedTypeStory').classList.toggle('active', type === 'story');
+  document.getElementById('schedDescSection').classList.toggle('hidden', type === 'story');
 }
 
-// SCHEDULE MODAL
 function cancelSchedule() {
   document.getElementById('schedBackdrop').classList.remove('open');
   document.getElementById('schedPanel').classList.remove('open');
@@ -712,62 +769,80 @@ function confirmSchedule() {
   var date = document.getElementById('schedDate').value;
   var time = document.getElementById('schedTime').value;
   if (!date || !time) return;
-
-  var scheduledAt = date + 'T' + time + ':00.000+03:00';
-  decisions[scheduleTargetIndex] = { action: 'schedule', scheduledAt: scheduledAt };
-
+  var scheduledAt = date+'T'+time+':00.000+03:00';
+  var desc = schedType === 'feed' ? document.getElementById('schedDescTextarea').value.trim() : '';
+  decisions[scheduleTargetIndex] = Object.assign(decisions[scheduleTargetIndex] || {}, {
+    action: 'schedule', scheduledAt: scheduledAt, description: desc, schedType: schedType
+  });
   document.getElementById('schedBackdrop').classList.remove('open');
   document.getElementById('schedPanel').classList.remove('open');
   haptic('success');
-
   if (scheduleTargetIndex === currentIndex) {
     updateBadge(currentIndex);
     updateButtonHighlights(currentIndex);
   }
   updateSaveBtn();
+  buildNavDropdown();
   scheduleTargetIndex = null;
 }
 
-// SAVE & SEND
+// UI UPDATES
+function updateBadge(index) {
+  var badge = document.getElementById('clipActionBadge');
+  var d = decisions[index];
+  if (!d) { badge.className = 'clip-action-badge'; badge.textContent = ''; return; }
+  var labels = { feed:'העלאה לפיד', story:'העלאה לסטורי', schedule:'מתוזמן', premium:'פרימיום', delete:'נמחק' };
+  badge.textContent = labels[d.action] || '';
+  badge.className = 'clip-action-badge visible '+(d.action === 'feed' ? 'feed' : d.action === 'story' ? 'story' : d.action === 'schedule' ? 'schedule' : d.action === 'premium' ? 'premium' : 'delete');
+}
+
+function updateButtonHighlights(index) {
+  var d = decisions[index];
+  var sel = d ? d.action : null;
+  ['feed','story','schedule','premium','delete'].forEach(function(a) {
+    var btn = document.getElementById('btn-'+a);
+    if (btn) btn.classList.toggle('selected', a === sel);
+  });
+  // show/hide desc indicator on feed button
+  var indicator = document.getElementById('feed-desc-indicator');
+  var hasFeedDesc = d && d.action === 'feed' && d.description;
+  if (indicator) indicator.classList.toggle('visible', !!hasFeedDesc);
+}
+
+function updateSaveBtn() {
+  var count = Object.keys(decisions).length;
+  document.getElementById('saveBtn').disabled = count === 0;
+  document.getElementById('saveProgress').textContent = count > 0 ? count+'/'+clips.length+' נבחרו' : '';
+}
+
+// SAVE
 function saveAll() {
   haptic('success');
-
   var items = clips.map(function(clip, i) {
-    var d = decisions[i] || { action: 'none', scheduledAt: '' };
+    var d = decisions[i] || { action:'none', scheduledAt:'', description:'', schedType:'' };
     return {
-      name:        clip.name        || ('קליפ ' + (i + 1)),
+      name:        clip.name        || ('קליפ '+(i+1)),
       driveUrl:    clip.driveUrl    || '',
       webViewLink: clip.webViewLink || '',
       action:      d.action,
-      scheduledAt: d.scheduledAt   || ''
+      scheduledAt: d.scheduledAt   || '',
+      description: d.description   || '',
+      schedType:   d.schedType     || ''
     };
   });
-
-  var payload = {
-    chatId: chatId,
-    clips:  JSON.stringify(items)
-  };
-
+  var payload = { chatId: chatId, clips: JSON.stringify(items) };
   if (!resumeUrl) { showState('success'); return; }
-
-  var qs = Object.keys(payload).map(function(k) {
-    return encodeURIComponent(k) + '=' + encodeURIComponent(payload[k]);
-  }).join('&');
-
+  var qs = Object.keys(payload).map(function(k) { return encodeURIComponent(k)+'='+encodeURIComponent(payload[k]); }).join('&');
   var img = new Image();
   img.onload = img.onerror = function() {};
   img.src = resumeUrl + (resumeUrl.indexOf('?') >= 0 ? '&' : '?') + qs;
-
   showState('success');
   if (tg) tg.disableClosingConfirmation();
 }
 
-// STATE MANAGEMENT
 function showState(name) {
-  ['success','empty','error'].forEach(function(s) {
-    document.getElementById('state-' + s).classList.remove('visible');
-  });
-  document.getElementById('state-' + name).classList.add('visible');
+  ['success','empty','error'].forEach(function(s) { document.getElementById('state-'+s).classList.remove('visible'); });
+  document.getElementById('state-'+name).classList.add('visible');
 }
 
 init();
