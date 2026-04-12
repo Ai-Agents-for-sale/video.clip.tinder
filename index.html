@@ -105,13 +105,14 @@
 
   .nav-arrow {
     position: absolute; top: 50%; transform: translateY(-50%);
-    z-index: 20; width: 40px; height: 40px; border-radius: 50%;
-    background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: #fff; font-size: 18px; font-weight: 700;
+    z-index: 20; width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.6);
+    color: #fff; font-size: 26px; font-weight: 900;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; transition: background 0.2s, opacity 0.2s;
     -webkit-user-select: none; user-select: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
   }
   .nav-arrow:active { background: rgba(255,255,255,0.3); }
   .nav-arrow.hidden { opacity:0; pointer-events:none; }
@@ -335,7 +336,7 @@
     border:1.5px solid var(--border); border-radius:12px;
     background:var(--surface2); font-size:15px; font-weight:500;
     font-family:'Heebo',sans-serif; color:var(--text);
-    direction:rtl; outline:none; padding:12px 14px; margin:0 0 16px;
+    direction:rtl; unicode-bidi:plaintext; outline:none; padding:12px 14px; margin:0 0 16px;
     box-sizing:border-box; resize:none;
     transition:border-color 0.2s; line-height:1.6;
   }
@@ -382,7 +383,7 @@
   <div class="topbar">
     <div>
       <div class="topbar-title">🎬 סקירת קליפים</div>
-      <div class="topbar-sub">בחר פעולה לכל קליפ ולחץ שמור בסוף התהליך</div>
+      <div class="topbar-sub">עבור בין הקליפים בעזרת החצים, בחר פעולה לכל קליפ ושמור בסוף התהליך, תוך 5 דקות תזמנת את כל הסרטונים לשבוע הקרוב 😊</div>
     </div>
     <div style="position:relative;">
       <div class="clip-counter-btn" id="clipCounterBtn" onclick="toggleNavDropdown()">— / —</div>
@@ -460,9 +461,17 @@
 <div class="panel-sheet" id="descPanel">
   <div class="panel-grab"></div>
   <div class="panel-heading">✍️ כתוב תיאור לפוסט</div>
-  <div class="panel-label">תיאור</div>
-  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateHashtags(this)"></textarea>
+  <div class="panel-label">תיאור <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 2200 תווים)</span></div>
+  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this)"></textarea>
   <div class="hashtag-warning" id="descHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
+  <div class="hashtag-warning" id="descCharWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ התיאור מוגבל ל-2200 תווים (מגבלת אינסטגרם)</div>
+  <!-- YouTube title field (shown only if hasYoutube) -->
+  <div id="descYoutubeSection" style="display:none;">
+    <div class="panel-label" style="margin-top:4px;">כותרת ליוטיוב <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 100 תווים)</span></div>
+    <div style="font-size:10px;color:var(--text-dimmer);margin-bottom:8px;">ביוטיוב יש גם כותרת וגם תיאור, איזה כותרת תרצה לסרטון? (רלוונטי רק ליוטיוב)</div>
+    <textarea class="desc-textarea" id="descYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this)"></textarea>
+    <div class="hashtag-warning" id="descYoutubeTitleWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ הכותרת מוגבלת ל-100 תווים</div>
+  </div>
   <button class="panel-confirm-btn" onclick="confirmDesc()">שמור תיאור ✓</button>
   <button class="panel-cancel-btn" onclick="cancelDesc()">ביטול</button>
 </div>
@@ -486,9 +495,17 @@
 
   <!-- Description (only for feed) -->
   <div class="desc-section" id="schedDescSection">
-    <div class="panel-label">תיאור לפוסט</div>
-    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateHashtags(this)"></textarea>
-  <div class="hashtag-warning" id="schedHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
+    <div class="panel-label">תיאור לפוסט <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 2200 תווים)</span></div>
+    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this)"></textarea>
+    <div class="hashtag-warning" id="schedHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
+    <div class="hashtag-warning" id="schedCharWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ התיאור מוגבל ל-2200 תווים (מגבלת אינסטגרם)</div>
+    <!-- YouTube title field -->
+    <div id="schedYoutubeSection" style="display:none;">
+      <div class="panel-label" style="margin-top:4px;">כותרת ליוטיוב <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 100 תווים)</span></div>
+      <div style="font-size:10px;color:var(--text-dimmer);margin-bottom:8px;">ביוטיוב יש גם כותרת וגם תיאור, איזה כותרת תרצה לסרטון? (רלוונטי רק ליוטיוב)</div>
+      <textarea class="desc-textarea" id="schedYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this)"></textarea>
+      <div class="hashtag-warning" id="schedYoutubeTitleWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ הכותרת מוגבלת ל-100 תווים</div>
+    </div>
   </div>
 
   <button class="panel-confirm-btn" onclick="confirmSchedule()">אשר תזמון ✓</button>
@@ -528,7 +545,8 @@ var params     = new URLSearchParams(window.location.search);
 var resumeUrl  = params.get('resumeUrl')  || '';
 var chatId     = params.get('chatId')     || '';
 var pollingUrl = params.get('pollingUrl') || '';
-var folderPath = params.get('folderPath') || '';
+var folderPath  = params.get('folderPath')  || '';
+var hasYoutube  = params.get('hasYoutube') === 'true';
 
 // STATE
 var clips           = [];
@@ -707,6 +725,8 @@ function selectAction(action) {
     descTargetIndex = currentIndex;
     var existing = decisions[currentIndex];
     document.getElementById('descTextarea').value = (existing && existing.description) ? existing.description : '';
+    document.getElementById('descYoutubeTitle').value = (existing && existing.youtubeTitle) ? existing.youtubeTitle : '';
+    document.getElementById('descYoutubeSection').style.display = hasYoutube ? 'block' : 'none';
     document.getElementById('descBackdrop').classList.add('open');
     document.getElementById('descPanel').classList.add('open');
     return;
@@ -717,6 +737,8 @@ function selectAction(action) {
     schedType = (ex && ex.schedType) ? ex.schedType : 'feed';
     setSchedType(schedType);
     document.getElementById('schedDescTextarea').value = (ex && ex.description) ? ex.description : '';
+    document.getElementById('schedYoutubeTitle').value = (ex && ex.youtubeTitle) ? ex.youtubeTitle : '';
+    document.getElementById('schedYoutubeSection').style.display = hasYoutube ? 'block' : 'none';
     document.getElementById('schedBackdrop').classList.add('open');
     document.getElementById('schedPanel').classList.add('open');
     return;
@@ -736,9 +758,10 @@ function cancelDesc() {
 }
 
 function confirmDesc() {
-  var desc = document.getElementById('descTextarea').value.trim();
+  var desc = fixBidirectionalDisplay(document.getElementById('descTextarea').value.trim());
+  var youtubeTitle = hasYoutube ? fixBidirectionalDisplay(document.getElementById('descYoutubeTitle').value.trim()) : '';
   decisions[descTargetIndex] = Object.assign(decisions[descTargetIndex] || {}, {
-    action: 'feed', scheduledAt: '', description: desc, schedType: 'feed'
+    action: 'feed', scheduledAt: '', description: desc, schedType: 'feed', youtubeTitle: youtubeTitle
   });
   document.getElementById('descBackdrop').classList.remove('open');
   document.getElementById('descPanel').classList.remove('open');
@@ -771,9 +794,10 @@ function confirmSchedule() {
   var time = document.getElementById('schedTime').value;
   if (!date || !time) return;
   var scheduledAt = date+'T'+time+':00.000+03:00';
-  var desc = schedType === 'feed' ? document.getElementById('schedDescTextarea').value.trim() : '';
+  var desc = schedType === 'feed' ? fixBidirectionalDisplay(document.getElementById('schedDescTextarea').value.trim()) : '';
+  var youtubeTitle = (hasYoutube && schedType === 'feed') ? fixBidirectionalDisplay(document.getElementById('schedYoutubeTitle').value.trim()) : '';
   decisions[scheduleTargetIndex] = Object.assign(decisions[scheduleTargetIndex] || {}, {
-    action: schedType, scheduledAt: scheduledAt, description: desc, schedType: schedType
+    action: schedType, scheduledAt: scheduledAt, description: desc, schedType: schedType, youtubeTitle: youtubeTitle
   });
   document.getElementById('schedBackdrop').classList.remove('open');
   document.getElementById('schedPanel').classList.remove('open');
@@ -839,8 +863,9 @@ function saveAll() {
       dropboxPath: clip.dropboxPath || '',
       action:      d.action,
       scheduledAt: d.scheduledAt   || '',
-      description: d.description   || '',
-      schedType:   d.schedType     || ''
+      description:  d.description   || '',
+      youtubeTitle: d.youtubeTitle  || '',
+      schedType:    d.schedType     || ''
     };
   });
   var payload = { chatId: chatId, clips: JSON.stringify(items) };
@@ -858,26 +883,69 @@ function showState(name) {
   document.getElementById('state-'+name).classList.add('visible');
 }
 
-function validateHashtags(textarea) {
+function fixBidirectionalDisplay(text) {
+  if (typeof text !== 'string' || !text) return text;
+  var RLM = '\u200F';
+  var LRI = '\u2066';
+  var PDI = '\u2069';
+  var t = text.replace(/[\u200E\u200F\u202A-\u202E]/g, '');
+  if (!/[\u0590-\u05FF]/.test(t)) return t;
+  t = t.replace(/((?:https?:\/\/|www\.)\S+)/gi, LRI+'$1'+PDI);
+  t = t.replace(/(^|\s)([#@][A-Za-z][A-Za-z0-9_]*)(?=$|\s)/g, '$1'+LRI+'$2'+PDI);
+  t = t.replace(/(^|\s)(#[\u0590-\u05FFa-zA-Z0-9_]+)/gm, '$1'+RLM+'$2');
+  t = t.replace(/\b([A-Za-z][A-Za-z0-9]*(?:\s+[A-Za-z][A-Za-z0-9]*){1,})\b/g, function(m, offset, str) {
+    if (/[\u0590-\u05FF]/.test(m)) return m;
+    return LRI+m+PDI;
+  });
+  t = t.replace(/\b([A-Za-z][A-Za-z0-9]*)\b/g, function(m, offset, str) {
+    var before = str[offset-1];
+    if (before === '\u2066') return m;
+    return LRI+m+PDI;
+  });
+  t = t.replace(/([\u0590-\u05FF]+)(\s+)(\d+)/g, '$1$2'+RLM+'$3');
+  t = t.replace(/([\u0590-\u05FF]+)([.,!?;:])/g, '$1$2'+RLM);
+  t = t.replace(/\u200F+/g, RLM);
+  return t;
+}
+
+function validateDesc(textarea) {
   var text = textarea.value;
+  // Check char limit 2200
+  var charWarnId = textarea.id === 'descTextarea' ? 'descCharWarn' : 'schedCharWarn';
+  var charWarn = document.getElementById(charWarnId);
+  if (text.length > 2200) {
+    textarea.value = text.substring(0, 2200);
+    if (charWarn) { charWarn.style.display = 'block'; setTimeout(function() { charWarn.style.display = 'none'; }, 3000); }
+    text = textarea.value;
+  } else {
+    if (charWarn) charWarn.style.display = 'none';
+  }
+  // Check hashtag limit 5
   var count = (text.match(/#\S+/g) || []).length;
-  var warnId = textarea.id === 'descTextarea' ? 'descHashtagWarn' : 'schedHashtagWarn';
-  var warn = document.getElementById(warnId);
+  var hashWarnId = textarea.id === 'descTextarea' ? 'descHashtagWarn' : 'schedHashtagWarn';
+  var hashWarn = document.getElementById(hashWarnId);
   if (count > 5) {
-    // Remove last hashtag that was typed
     var lastHash = text.lastIndexOf('#');
-    if (lastHash !== -1) {
-      // find end of last hashtag
-      var end = text.indexOf(' ', lastHash);
-      if (end === -1) end = text.length;
-      textarea.value = text.substring(0, lastHash).trimEnd();
-    }
-    if (warn) warn.style.display = 'block';
-    setTimeout(function() { if (warn) warn.style.display = 'none'; }, 3000);
+    if (lastHash !== -1) textarea.value = text.substring(0, lastHash).trimEnd();
+    if (hashWarn) { hashWarn.style.display = 'block'; setTimeout(function() { hashWarn.style.display = 'none'; }, 3000); }
+  } else {
+    if (hashWarn) hashWarn.style.display = 'none';
+  }
+}
+
+function validateYoutubeTitle(textarea) {
+  var text = textarea.value;
+  var warnId = textarea.id === 'descYoutubeTitle' ? 'descYoutubeTitleWarn' : 'schedYoutubeTitleWarn';
+  var warn = document.getElementById(warnId);
+  if (text.length > 100) {
+    textarea.value = text.substring(0, 100);
+    if (warn) { warn.style.display = 'block'; setTimeout(function() { warn.style.display = 'none'; }, 3000); }
   } else {
     if (warn) warn.style.display = 'none';
   }
 }
+
+function validateHashtags(textarea) { validateDesc(textarea); }
 
 init();
 </script>
