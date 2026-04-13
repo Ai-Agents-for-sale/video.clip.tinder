@@ -850,7 +850,8 @@ function updateSaveBtn() {
 function saveAll() {
   haptic('success');
   var items = clips.map(function(clip, i) {
-    var d = decisions[i] || { action:'none', scheduledAt:'', description:'', schedType:'' };
+    var d = decisions[i];
+    if (!d) return null;
     return {
       name:         clip.name        || ('קליפ '+(i+1)),
       driveUrl:     clip.driveUrl    || '',
@@ -862,7 +863,7 @@ function saveAll() {
       youtubeTitle: d.youtubeTitle  || '',
       schedType:    d.schedType     || ''
     };
-  });
+  }).filter(function(item) { return item !== null; });
 
   showState('success');
   if (tg) tg.disableClosingConfirmation();
