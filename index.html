@@ -462,17 +462,17 @@
   <div class="panel-grab"></div>
   <div class="panel-heading">✍️ כתוב תיאור לפוסט</div>
   <div class="panel-label">תיאור <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 2200 תווים)</span></div>
-  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this)"></textarea>
+  <textarea class="desc-textarea" id="descTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this); updateDescBtn()"></textarea>
   <div class="hashtag-warning" id="descHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
   <div class="hashtag-warning" id="descCharWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ התיאור מוגבל ל-2200 תווים (מגבלת אינסטגרם)</div>
   <!-- YouTube title field (shown only if hasYoutube) -->
   <div id="descYoutubeSection" style="display:none;">
     <div class="panel-label" style="margin-top:4px;">כותרת ליוטיוב <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 100 תווים)</span></div>
     <div style="font-size:10px;color:var(--text-dimmer);margin-bottom:8px;">ביוטיוב יש גם כותרת וגם תיאור, איזה כותרת תרצה לסרטון? (רלוונטי רק ליוטיוב)</div>
-    <textarea class="desc-textarea" id="descYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this)"></textarea>
+    <textarea class="desc-textarea" id="descYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this); updateDescBtn()"></textarea>
     <div class="hashtag-warning" id="descYoutubeTitleWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ הכותרת מוגבלת ל-100 תווים</div>
   </div>
-  <button class="panel-confirm-btn" onclick="confirmDesc()">שמור תיאור ✓</button>
+  <button class="panel-confirm-btn" id="descConfirmBtn" onclick="confirmDesc()" disabled style="opacity:0.4;cursor:default;">שמור תיאור ✓</button>
   <button class="panel-cancel-btn" onclick="cancelDesc()">ביטול</button>
 </div>
 
@@ -496,19 +496,19 @@
   <!-- Description (only for feed) -->
   <div class="desc-section" id="schedDescSection">
     <div class="panel-label">תיאור לפוסט <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 2200 תווים)</span></div>
-    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this)"></textarea>
+    <textarea class="desc-textarea" id="schedDescTextarea" placeholder="כתוב כאן את התיאור שיופיע בפוסט..." oninput="validateDesc(this); updateSchedBtn()"></textarea>
     <div class="hashtag-warning" id="schedHashtagWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ אינסטגרם מגבילה עד 5 האשטגים בלבד</div>
     <div class="hashtag-warning" id="schedCharWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ התיאור מוגבל ל-2200 תווים (מגבלת אינסטגרם)</div>
     <!-- YouTube title field -->
     <div id="schedYoutubeSection" style="display:none;">
       <div class="panel-label" style="margin-top:4px;">כותרת ליוטיוב <span style="font-size:10px;color:var(--text-dimmer);font-weight:400;">(עד 100 תווים)</span></div>
       <div style="font-size:10px;color:var(--text-dimmer);margin-bottom:8px;">ביוטיוב יש גם כותרת וגם תיאור, איזה כותרת תרצה לסרטון? (רלוונטי רק ליוטיוב)</div>
-      <textarea class="desc-textarea" id="schedYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this)"></textarea>
+      <textarea class="desc-textarea" id="schedYoutubeTitle" placeholder="כתוב כאן את הכותרת לסרטון ביוטיוב..." style="min-height:60px;" oninput="validateYoutubeTitle(this); updateSchedBtn()"></textarea>
       <div class="hashtag-warning" id="schedYoutubeTitleWarn" style="display:none;color:#c0392b;font-size:11px;font-weight:600;margin-top:-10px;margin-bottom:10px;">⚠️ הכותרת מוגבלת ל-100 תווים</div>
     </div>
   </div>
 
-  <button class="panel-confirm-btn" onclick="confirmSchedule()">אשר תזמון ✓</button>
+  <button class="panel-confirm-btn" id="schedConfirmBtn" onclick="confirmSchedule()">אשר תזמון ✓</button>
   <button class="panel-cancel-btn" onclick="cancelSchedule()">ביטול</button>
 </div>
 
@@ -726,6 +726,7 @@ function selectAction(action) {
     var existing = decisions[currentIndex];
     document.getElementById('descTextarea').value = (existing && existing.description) ? existing.description : '';
     document.getElementById('descYoutubeTitle').value = (existing && existing.youtubeTitle) ? existing.youtubeTitle : '';
+    setTimeout(updateDescBtn, 0);
     document.getElementById('descYoutubeSection').style.display = hasYoutube ? 'block' : 'none';
     document.getElementById('descBackdrop').classList.add('open');
     document.getElementById('descPanel').classList.add('open');
@@ -738,6 +739,7 @@ function selectAction(action) {
     setSchedType(schedType);
     document.getElementById('schedDescTextarea').value = (ex && ex.description) ? ex.description : '';
     document.getElementById('schedYoutubeTitle').value = (ex && ex.youtubeTitle) ? ex.youtubeTitle : '';
+    setTimeout(updateSchedBtn, 0);
     document.getElementById('schedYoutubeSection').style.display = hasYoutube ? 'block' : 'none';
     document.getElementById('schedBackdrop').classList.add('open');
     document.getElementById('schedPanel').classList.add('open');
@@ -760,16 +762,8 @@ function cancelDesc() {
 function confirmDesc() {
   var desc = fixBidirectionalDisplay(document.getElementById('descTextarea').value.trim());
   var youtubeTitle = hasYoutube ? fixBidirectionalDisplay(document.getElementById('descYoutubeTitle').value.trim()) : '';
-  if (!desc) {
-    document.getElementById('descTextarea').style.borderColor = 'var(--red)';
-    setTimeout(function() { document.getElementById('descTextarea').style.borderColor = ''; }, 2000);
-    return;
-  }
-  if (hasYoutube && !youtubeTitle) {
-    document.getElementById('descYoutubeTitle').style.borderColor = 'var(--red)';
-    setTimeout(function() { document.getElementById('descYoutubeTitle').style.borderColor = ''; }, 2000);
-    return;
-  }
+  if (!desc) { alert('חובה למלא תיאור'); return; }
+  if (hasYoutube && !youtubeTitle) { alert('חובה למלא כותרת ליוטיוב'); return; }
   decisions[descTargetIndex] = Object.assign(decisions[descTargetIndex] || {}, {
     action: 'feed', scheduledAt: '', description: desc, schedType: 'feed', youtubeTitle: youtubeTitle
   });
@@ -806,16 +800,8 @@ function confirmSchedule() {
   var scheduledAt = date+'T'+time+':00.000+03:00';
   var desc = schedType === 'feed' ? fixBidirectionalDisplay(document.getElementById('schedDescTextarea').value.trim()) : '';
   var youtubeTitle = (hasYoutube && schedType === 'feed') ? fixBidirectionalDisplay(document.getElementById('schedYoutubeTitle').value.trim()) : '';
-  if (schedType === 'feed' && !desc) {
-    document.getElementById('schedDescTextarea').style.borderColor = 'var(--red)';
-    setTimeout(function() { document.getElementById('schedDescTextarea').style.borderColor = ''; }, 2000);
-    return;
-  }
-  if (hasYoutube && schedType === 'feed' && !youtubeTitle) {
-    document.getElementById('schedYoutubeTitle').style.borderColor = 'var(--red)';
-    setTimeout(function() { document.getElementById('schedYoutubeTitle').style.borderColor = ''; }, 2000);
-    return;
-  }
+  if (schedType === 'feed' && !desc) { alert('חובה למלא תיאור'); return; }
+  if (hasYoutube && schedType === 'feed' && !youtubeTitle) { alert('חובה למלא כותרת ליוטיוב'); return; }
   decisions[scheduleTargetIndex] = Object.assign(decisions[scheduleTargetIndex] || {}, {
     action: schedType, scheduledAt: scheduledAt, description: desc, schedType: schedType, youtubeTitle: youtubeTitle
   });
@@ -927,6 +913,26 @@ function fixBidirectionalDisplay(text) {
   t = t.replace(/([\u0590-\u05FF]+)([.,!?;:])/g, '$1$2'+RLM);
   t = t.replace(/\u200F+/g, RLM);
   return t;
+}
+
+function updateDescBtn() {
+  var desc = document.getElementById('descTextarea').value.trim();
+  var youtubeOk = !hasYoutube || document.getElementById('descYoutubeTitle').value.trim();
+  var btn = document.getElementById('descConfirmBtn');
+  var ok = desc && youtubeOk;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.cursor = ok ? 'pointer' : 'default';
+}
+
+function updateSchedBtn() {
+  var desc = document.getElementById('schedDescTextarea').value.trim();
+  var youtubeOk = !hasYoutube || document.getElementById('schedYoutubeTitle').value.trim();
+  var btn = document.getElementById('schedConfirmBtn');
+  var ok = desc && youtubeOk;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.cursor = ok ? 'pointer' : 'default';
 }
 
 function validateDesc(textarea) {
