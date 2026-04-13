@@ -545,7 +545,7 @@ var params     = new URLSearchParams(window.location.search);
 var resumeUrl  = params.get('resumeUrl')  || '';
 var chatId     = params.get('chatId')     || '';
 var pollingUrl = params.get('pollingUrl') || '';
-var folderPath  = decodeURIComponent(params.get('folderPath') || '');
+var folderPath  = params.get('folderPath')  || '';
 var hasYoutube  = params.get('hasYoutube') === 'true';
 
 // STATE
