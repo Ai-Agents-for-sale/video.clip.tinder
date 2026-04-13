@@ -551,12 +551,12 @@ var hasYoutube  = params.get('hasYoutube') === 'true';
 // STATE
 var clips           = [];
 var currentIndex    = 0;
-var decisions       = {};
+var decisions       = {}; // { index: { action, scheduledAt, description, schedType } }
 var currentViewLink = '';
 var currentDownloadUrl = '';
 var scheduleTargetIndex = null;
 var descTargetIndex     = null;
-var schedType = 'feed';
+var schedType = 'feed'; // 'feed' or 'story'
 
 // Init date/time
 (function() {
@@ -640,6 +640,7 @@ function navToClip(index) {
   }, 200);
 }
 
+// Close dropdown on outside click
 document.addEventListener('click', function(e) {
   var btn = document.getElementById('clipCounterBtn');
   var dd  = document.getElementById('clipNavDropdown');
@@ -652,7 +653,7 @@ function loadClip(index) {
   if (!clip) return;
   currentIndex       = index;
   currentViewLink    = clip.webViewLink  || '';
-  currentDownloadUrl = clip.downloadUrl  || (clip.webViewLink ? clip.webViewLink.replace('dl=0','dl=1') : '');
+  currentDownloadUrl = clip.downloadUrl  || clip.webViewLink?.replace('dl=0','dl=1') || '';
 
   document.getElementById('clipCounterBtn').textContent = (index+1)+' / '+clips.length;
   document.getElementById('arrowRight').classList.toggle('hidden', index >= clips.length-1);
@@ -687,6 +688,7 @@ function openDriveLink() { if (currentViewLink) window.open(currentViewLink, '_b
 function downloadClip() {
   haptic('impact');
   if (!currentDownloadUrl) return;
+  // Use Telegram openLink to skip the first dialog and go straight to download
   if (tg && tg.openLink) {
     tg.openLink(currentDownloadUrl);
   } else {
@@ -719,6 +721,7 @@ document.getElementById('clipViewer').addEventListener('touchend',   function(e)
 function selectAction(action) {
   haptic('impact');
   if (action === 'feed') {
+    // Open description panel
     descTargetIndex = currentIndex;
     var existing = decisions[currentIndex];
     document.getElementById('descTextarea').value = (existing && existing.description) ? existing.description : '';
@@ -813,7 +816,8 @@ function updateBadge(index) {
   var badge = document.getElementById('clipActionBadge');
   var d = decisions[index];
   if (!d) { badge.className = 'clip-action-badge'; badge.textContent = ''; return; }
-  var isScheduled = d && d.scheduledAt;
+  var d2 = decisions[index];
+  var isScheduled = d2 && d2.scheduledAt;
   var labels = { feed: isScheduled ? 'מתוזמן לפיד' : 'העלאה לפיד', story: isScheduled ? 'מתוזמן לסטורי' : 'העלאה לסטורי', premium:'פרימיום', delete:'נמחק' };
   badge.textContent = labels[d.action] || '';
   var badgeClass = isScheduled ? 'schedule' : (d.action === 'feed' ? 'feed' : d.action === 'story' ? 'story' : d.action === 'premium' ? 'premium' : 'delete');
@@ -835,6 +839,7 @@ function updateButtonHighlights(index) {
       btn.classList.toggle('selected', a === sel);
     }
   });
+  // show/hide desc indicator on feed button
   var indicator = document.getElementById('feed-desc-indicator');
   var hasFeedDesc = d && d.action === 'feed' && d.description;
   if (indicator) indicator.classList.toggle('visible', !!hasFeedDesc);
@@ -846,12 +851,11 @@ function updateSaveBtn() {
   document.getElementById('saveProgress').textContent = count > 0 ? count+'/'+clips.length+' נבחרו' : '';
 }
 
-// *** SAVE — POST במקום GET ***
+// SAVE
 function saveAll() {
   haptic('success');
   var items = clips.map(function(clip, i) {
-    var d = decisions[i];
-    if (!d) return null;
+    var d = decisions[i] || { action:'none', scheduledAt:'', description:'', schedType:'' };
     return {
       name:         clip.name        || ('קליפ '+(i+1)),
       driveUrl:     clip.driveUrl    || '',
@@ -860,14 +864,12 @@ function saveAll() {
       action:       d.action,
       scheduledAt:  d.scheduledAt   || '',
       description:  d.description   || '',
-      youtubeTitle: d.youtubeTitle  || '',
-      schedType:    d.schedType     || ''
+      youtubeTitle: d.youtubeTitle  || ''
     };
-  }).filter(function(item) { return item !== null; });
+  });
 
   showState('success');
   if (tg) tg.disableClosingConfirmation();
-
   if (!resumeUrl) return;
 
   fetch(resumeUrl, {
@@ -909,6 +911,7 @@ function fixBidirectionalDisplay(text) {
 
 function validateDesc(textarea) {
   var text = textarea.value;
+  // Check char limit 2200
   var charWarnId = textarea.id === 'descTextarea' ? 'descCharWarn' : 'schedCharWarn';
   var charWarn = document.getElementById(charWarnId);
   if (text.length > 2200) {
@@ -918,6 +921,7 @@ function validateDesc(textarea) {
   } else {
     if (charWarn) charWarn.style.display = 'none';
   }
+  // Check hashtag limit 5
   var count = (text.match(/#\S+/g) || []).length;
   var hashWarnId = textarea.id === 'descTextarea' ? 'descHashtagWarn' : 'schedHashtagWarn';
   var hashWarn = document.getElementById(hashWarnId);
